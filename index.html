@@ -1,14 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Remarkable Trees App</title>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/styles/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>remarkable-trees-app</title>
 </head>
+
 <body>
-  <h1>Remarkable Trees</h1>
-  <div id="tree-list"></div>
+    <header>
+        <h1> Remarkable Trees </h1>
+        <div id="language-switch">
+            <button data-lang="nl" class="lang-btn active">NL</button>
+            <button data-lang="fr" class="lang-btn">FR</button>
+        </div>
+
+        <nav id="view-switch">
+            <button id="view-list" class="active">Lijst</button>
+            <button id="view-map">Kaart</button>
+        </nav>
+        <input id="search" type="text" placeholder="Zoek op naam…">
+    </header>
+    <main>
+        <section id="list-view"></section>
+        <section id="map-view" style="display: none;"></section>
+    </main>
+    <script type="module" src="/src/scripts/app.js"></script>
 
 
-  <script src="script.js"></script>
 </body>
+
 </html>
