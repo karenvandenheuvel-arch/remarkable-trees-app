@@ -1,3 +1,76 @@
+/* ====== GLOBAL RESET ====== */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  background: #f5f5f5;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #222;
+}
+
+/* ====== LIST VIEW CONTAINER ====== */
+#list-view {
+  width: 100%;
+  padding: 1.5rem;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: space-between;
+}
+
+/* ====== TREE CARD ====== */
+.tree-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  min-height: 340px;
+  box-sizing: border-box;
+
+  flex: 1 1 220px; /* automatische responsive breedte */
+}
+
+/* Foto */
+.tree-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Tekstblokken stabiliseren */
+.tree-card h3 {
+  margin: 0;
+  min-height: 2.4em;
+}
+
+.tree-card p {
+  margin: 0;
+  min-height: 1.4em;
+}
+
+/* Detail link */
+.detail-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.detail-link:hover {
+  text-decoration: underline;
+}
+
+/* ====== LANGUAGE SWITCH ====== */
 #language-switch {
   display: flex;
   gap: 0.5rem;
@@ -18,15 +91,45 @@
   border-color: #333;
 }
 
+.tree-card {
+  position: relative;
 
-.detail-link {
-  display: inline-block;
-  margin-top: 0.5rem;
-  color: #0066cc;
-  text-decoration: none;
-  font-weight: 600;
 }
 
-.detail-link:hover {
-  text-decoration: underline;
+.fav-btn {
+  position: absolute;
+  top: 15px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  color: white;
+  text-shadow: 0 0 6px rgba(0,0,0,0.6);
+}
+
+.fav-btn.active {
+  color: #2ecc71; /* groen */
+}
+
+.tree-icon {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 900px) {
+  .tree-card {
+    flex: 1 1 calc(50% - 1.5rem);
+  }
+}
+
+@media (max-width: 600px) {
+  .tree-card {
+    flex: 1 1 100%;
+  }
 }
