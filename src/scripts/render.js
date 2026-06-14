@@ -24,11 +24,12 @@ imgWrapper.classList.add("tree-image");
 /* ---------------- PLAATSHOUDER (boom silhouet) ---------------- */
 const placeholder =
   "data:image/svg+xml;utf8,\
-  <svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 100 100'>\
-    <rect width='100' height='100' fill='%23f2f2f2'/>\
-    <path d='M50 12 L32 40 L40 40 L27 62 L40 62 L36 82 L64 82 L60 62 L73 62 L60 40 L68 40 Z' \
+  <svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300' preserveAspectRatio='xMidYMid slice'>\
+    <rect width='400' height='300' rx='16' ry='16' fill='%23f2f2f2'/>\
+    <path d='M200 40 L140 140 L165 140 L130 200 L165 200 L155 250 L245 250 L235 200 L270 200 L235 140 L260 140 Z' \
           fill='%23c7c7c7'/>\
   </svg>";
+
 
 
 /* ---------------- FOTO ELEMENT ---------------- */

@@ -10,19 +10,32 @@
 </head>
 
 <body>
-    <header>
-        <h1> Remarkable Trees </h1>
-        <div id="language-switch">
-            <button data-lang="nl" class="lang-btn active">NL</button>
-            <button data-lang="fr" class="lang-btn">FR</button>
-        </div>
+<header>
+  <div class="header-inner">
 
-        <nav id="view-switch">
-            <button id="view-list" class="active">Lijst</button>
-            <button id="view-map">Kaart</button>
-        </nav>
-        <input id="search" type="text" placeholder="Zoek op naam…">
-    </header>
+    <div class="header-left">
+      <div id="view-switch">
+        <button id="view-list" class="view-btn active">Lijst</button>
+        <button id="view-map" class="view-btn">Kaart</button>
+      </div>
+    </div>
+
+    <h1 class="site-title">Remarkable Trees in Brussels</h1>
+
+    <div class="header-right">
+      <input id="search-bar" type="text" placeholder="Zoek op naam...">
+
+      <div id="language-switch">
+<button class="lang-btn" data-lang="nl">NL</button>
+<button class="lang-btn" data-lang="fr">FR</button>
+
+      </div>
+    </div>
+
+  </div>
+</header>
+
+
     <main>
         <section id="list-view"></section>
         <section id="map-view" style="display: none;"></section>
