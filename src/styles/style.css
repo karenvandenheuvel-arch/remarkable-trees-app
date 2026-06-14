@@ -35,18 +35,60 @@ html, body {
   min-height: 340px;
   box-sizing: border-box;
 
-  flex: 1 1 220px; /* automatische responsive breedte */
+  flex: 1 1 220px;
 }
 
-/* Foto */
-.tree-card img {
+/* ====== FOTO WRAPPER ====== */
+.tree-image {
+  position: relative;
+  overflow: hidden;          /* knop blijft binnen foto */
+  border-radius: 8px;        /* foto + wrapper matchen */
+}
+
+/* ====== FOTO ====== */
+.tree-image img {
+  display: block;
   width: 100%;
   height: 180px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
-/* Tekstblokken stabiliseren */
+/* ====== FAVORIET-KNOP ====== */
+.fav-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  background: rgba(0,0,0,0.45);
+  border: none;
+  padding: 6px;
+  width: 40px;
+  height: 40px;
+
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-bottom-left-radius: 8px; /* volgt foto-rand */
+}
+
+/* ====== SVG ICON ====== */
+.tree-icon {
+  width: 100%;
+  height: 100%;
+}
+
+.fav-btn .outline {
+  color: white;
+}
+
+.fav-btn.active .filled {
+  color: #2ecc71;
+}
+
+/* ====== TEKST ====== */
 .tree-card h3 {
   margin: 0;
   min-height: 2.4em;
@@ -57,7 +99,7 @@ html, body {
   min-height: 1.4em;
 }
 
-/* Detail link */
+/* ====== DETAIL LINK ====== */
 .detail-link {
   display: inline-block;
   margin-top: 0.5rem;
@@ -90,36 +132,6 @@ html, body {
   color: white;
   border-color: #333;
 }
-
-.tree-card {
-  position: relative;
-
-}
-
-.fav-btn {
-  position: absolute;
-  top: 15px;
-  right: 16px;
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
-  color: white;
-  text-shadow: 0 0 6px rgba(0,0,0,0.6);
-}
-
-.fav-btn.active {
-  color: #2ecc71; /* groen */
-}
-
-.tree-icon {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
 
 /* ====== RESPONSIVE ====== */
 @media (max-width: 900px) {
