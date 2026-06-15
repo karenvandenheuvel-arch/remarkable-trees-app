@@ -1,294 +1,38 @@
 'use strict';
 
+/* ----------------------------------------------------
+   IMPORTS
+---------------------------------------------------- */
 import { fetchTrees } from './api.js';
-import { renderTreeList } from './render.js';
-import { translations, rarityLabels } from './utils.js';
+import { translations } from './utils.js';
+import { initMap } from "./map.js";
+import { map } from "./map.js";
+import { renderMarkers } from "./map.js";
+
+
+
+
+import {
+  setupFilters,
+  applyFilters,
+  populateStatusFilter,
+  populateRarityFilter,
+  updateSortLabels
+} from './filter.js';
+
+import {
+  loadFavorites,
+  saveFavorites,
+  toggleFavorite,
+  resetFavorites,
+  favorites
+} from './favorites.js';
 
 /* ----------------------------------------------------
    STATE
 ---------------------------------------------------- */
-let currentLanguage = "nl";
-let allTrees = [];
-
-const FAVORITES_KEY = "remarkableTreesFavorites";
-let favorites = [];
-/* ----------------------------------------------------
-   STATUS FILTER
----------------------------------------------------- */
-function populateStatusFilter() {
-  const select = document.getElementById("status-filter");
-  select.innerHTML = `<option value="all">${currentLanguage === "nl" ? "Alle" : "Tous"}</option>`;
-
-  const lang = currentLanguage;
-
-  const statuses = [...new Set(allTrees.map(t => t.statuts_fr).filter(Boolean))].sort();
-
-  statuses.forEach(statusFr => {
-    const opt = document.createElement("option");
-    opt.value = statusFr;
-
-    const label =
-      lang === "nl"
-        ? allTrees.find(t => t.statuts_fr === statusFr)?.statuts_nl || statusFr
-        : statusFr;
-
-    opt.textContent = label;
-    select.appendChild(opt);
-  });
-}
-/* ----------------------------------------------------
-   RARITY FILTER
----------------------------------------------------- */
-function populateRarityFilter() {
-  const select = document.getElementById("rarity-filter");
-
-  select.innerHTML = `<option value="all">${currentLanguage === "nl" ? "Alle" : "Tous"}</option>`;
-
-  const lang = currentLanguage;
-
-  const rarities = [...new Set(allTrees.map(t => t.rarete).filter(Boolean))].sort((a, b) => a - b);
-
-  rarities.forEach(rarity => {
-    const opt = document.createElement("option");
-    opt.value = rarity;
-    opt.textContent = rarityLabels[lang][rarity] || rarity;
-    select.appendChild(opt);
-  });
-}
-
-/* ----------------------------------------------------
-   SORT LABELS
----------------------------------------------------- */
-function updateSortLabels() {
-  const select = document.getElementById("sort-select");
-
-  const labels = {
-    nl: {
-      "name-asc": "Naam (A → Z)",
-      "name-desc": "Naam (Z → A)",
-      "girth-desc": "Omtrek (groot → klein)",
-      "girth-asc": "Omtrek (klein → groot)",
-      "crown-desc": "Kruin (groot → klein)",
-      "crown-asc": "Kruin (klein → groot)"
-    },
-    fr: {
-      "name-asc": "Nom (A → Z)",
-      "name-desc": "Nom (Z → A)",
-      "girth-desc": "Circonférence (grand → petit)",
-      "girth-asc": "Circonférence (petit → grand)",
-      "crown-desc": "Couronne (grand → petit)",
-      "crown-asc": "Couronne (petit → grand)"
-    }
-  };
-
-  const currentValue = select.value;
-
-  select.innerHTML = "";
-
-  Object.entries(labels[currentLanguage]).forEach(([value, label]) => {
-    const opt = document.createElement("option");
-    opt.value = value;
-    opt.textContent = label;
-    select.appendChild(opt);
-  });
-
-  select.value = currentValue || "name-asc";
-}
-
-/* ----------------------------------------------------
-   APPLY FILTER
----------------------------------------------------- */
-function applyFilters() {
-  const statusValue = document.getElementById("status-filter").value;
-  const searchValue = document.getElementById("search-bar").value.toLowerCase();
-  const rarityValue = document.getElementById("rarity-filter").value;
-
-  let filtered = [...allTrees];
-
-  // STATUS
-  if (statusValue !== "all") {
-    filtered = filtered.filter(tree => tree.statuts_fr === statusValue);
-  }
-
-  // ZOEKEN
-  if (searchValue.trim() !== "") {
-    filtered = filtered.filter(tree =>
-      tree.nom_nl.toLowerCase().includes(searchValue) ||
-      tree.nom_fr.toLowerCase().includes(searchValue)
-    );
-  }
-
-  // ZELDZAAMHEID
-  if (rarityValue !== "all") {
-    filtered = filtered.filter(tree => String(tree.rarete) === rarityValue);
-  }
-
-  // SLIDERS
-  const girthSliderValue = Number(document.getElementById("girth-slider").value); // cm
-  const crownMin = Number(document.getElementById("crown-slider").value);        // m
-
-  // OMTREK (cm → m)
-  if (girthSliderValue > 0) {
-    const girthMinMeters = girthSliderValue / 100;
-    filtered = filtered.filter(tree => {
-      const girth = Number(tree.circonference);
-      return !isNaN(girth) && girth >= girthMinMeters;
-    });
-  }
-
-  // KRUINDIAMETER (m)
-  if (crownMin > 0) {
-    filtered = filtered.filter(tree => {
-      const crown = Number(tree.diametre_cime);
-      return !isNaN(crown) && crown >= crownMin;
-    });
-  }
-
-  // FAVORIETEN FILTER (BUTTON)
-  const favBtn = document.getElementById("favorites-toggle");
-  const favOnly = favBtn.classList.contains("active");
-
-  if (favOnly) {
-    filtered = filtered.filter(tree => favorites.includes(tree.id_arbres_cms));
-  }
-
-  // ⭐ SORTEREN
-const sortValue = document.getElementById("sort-select").value;
-
-filtered.sort((a, b) => {
-  switch (sortValue) {
-
-    case "name-asc": {
-      const nameA = (currentLanguage === "nl" ? a.nom_nl : a.nom_fr) || "";
-      const nameB = (currentLanguage === "nl" ? b.nom_nl : b.nom_fr) || "";
-      return nameA.localeCompare(nameB);
-    }
-
-    case "name-desc": {
-      const nameA = (currentLanguage === "nl" ? a.nom_nl : a.nom_fr) || "";
-      const nameB = (currentLanguage === "nl" ? b.nom_nl : b.nom_fr) || "";
-      return nameB.localeCompare(nameA);
-    }
-
-    case "girth-desc": {
-      const girthA = Number(a.circonference) || 0;
-      const girthB = Number(b.circonference) || 0;
-      return girthB - girthA; // groot → klein
-    }
-
-    case "girth-asc": {
-      const girthA = Number(a.circonference) || 0;
-      const girthB = Number(b.circonference) || 0;
-      return girthA - girthB; // klein → groot
-    }
-
-    case "crown-desc": {
-      const crownA = Number(a.diametre_cime) || 0;
-      const crownB = Number(b.diametre_cime) || 0;
-      return crownB - crownA; // groot → klein
-    }
-
-    case "crown-asc": {
-      const crownA = Number(a.diametre_cime) || 0;
-      const crownB = Number(b.diametre_cime) || 0;
-      return crownA - crownB; // klein → groot
-    }
-
-    default:
-      return 0;
-  }
-});
-
-
-  renderTreeList(filtered, currentLanguage, favorites);
-}
-
-
-
-/* ----------------------------------------------------
-   FILTER SETUP
----------------------------------------------------- */
-/* ----------------------------------------------------
-   FILTER SETUP
----------------------------------------------------- */
-/* ----------------------------------------------------
-   FILTER SETUP
----------------------------------------------------- */
-function setupFilters() {
-  document.getElementById("status-filter").addEventListener("change", applyFilters);
-  document.getElementById("search-bar").addEventListener("input", applyFilters);
-  document.getElementById("rarity-filter").addEventListener("change", applyFilters);
-
-  // SLIDERS
-  const girthSlider = document.getElementById("girth-slider");
-  const girthValue = document.getElementById("girth-value");
-
-  girthSlider.addEventListener("input", () => {
-    girthValue.textContent = "Omtrek: " + girthSlider.value + " cm";
-    applyFilters();
-  });
-
-  const crownSlider = document.getElementById("crown-slider");
-  const crownValue = document.getElementById("crown-value");
-
-  crownSlider.addEventListener("input", () => {
-    crownValue.textContent = "Diameter top: " + crownSlider.value + " m";
-    applyFilters();
-  });
-
-  // INITIËLE WAARDES TONEN ONMIDDELLIJK
-  girthValue.textContent =  girthSlider.value + " cm";
-  crownValue.textContent = crownSlider.value + " m";
-
-  // FAVORIETEN TOGGLE BUTTON
-  const favBtn = document.getElementById("favorites-toggle");
-  favBtn.addEventListener("click", () => {
-    favBtn.classList.toggle("active");
-    applyFilters();
-  });
-
-  document.getElementById("favorites-reset").addEventListener("click", () => {
-    resetFavorites();
-  });
-
-  document.getElementById("sort-select").addEventListener("change", applyFilters);
-}
-
-
-/* ----------------------------------------------------
-   FAVORIETEN
----------------------------------------------------- */
-function loadFavorites() {
-  const stored = localStorage.getItem(FAVORITES_KEY);
-  favorites = stored ? JSON.parse(stored) : [];
-}
-
-function saveFavorites() {
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
-}
-
-export function toggleFavorite(treeId) {
-  if (favorites.includes(treeId)) {
-    favorites = favorites.filter(id => id !== treeId);
-  } else {
-    favorites.push(treeId);
-  }
-
-  saveFavorites();
-  applyFilters();
-}
-
-function resetFavorites() {
-  favorites = [];
-  saveFavorites();
-
-  // toggle‑button uitzetten
-  const favBtn = document.getElementById("favorites-toggle");
-  favBtn.classList.remove("active");
-
-  // lijst opnieuw renderen
-  applyFilters();
-}
+export let currentLanguage = "nl";
+export let allTrees = [];
 
 
 /* ----------------------------------------------------
@@ -297,12 +41,12 @@ function resetFavorites() {
 export async function initApp() {
   loadFavorites();
   allTrees = await fetchTrees();
-
+  initMap(); // kaart tonen
   updateViewSwitchLabels();
-  populateStatusFilter();
-  populateRarityFilter();
-  updateSortLabels();
-  updateFilterPlaceholders() 
+  populateStatusFilter(allTrees, currentLanguage);
+  populateRarityFilter(allTrees, currentLanguage);
+  updateSortLabels(currentLanguage);
+  updateFilterPlaceholders();
 
   document.getElementById("girth-value").textContent =
     document.getElementById("girth-slider").value + " cm";
@@ -310,10 +54,8 @@ export async function initApp() {
   document.getElementById("crown-value").textContent =
     document.getElementById("crown-slider").value + " m";
 
-  // FAVORIETENFILTER UIT BIJ START
   document.getElementById("favorites-toggle").classList.remove("active");
   document.getElementById("sort-select").value = "name-asc";
-
 
   applyFilters();
 }
@@ -321,6 +63,8 @@ export async function initApp() {
 /* ----------------------------------------------------
    VIEW SWITCH
 ---------------------------------------------------- */
+
+
 function setupViewSwitch() {
   const listBtn = document.getElementById("view-list");
   const mapBtn = document.getElementById("view-map");
@@ -328,22 +72,40 @@ function setupViewSwitch() {
   const listView = document.getElementById("list-view");
   const mapView = document.getElementById("map-view");
 
+  // 👉 LIST VIEW
   listBtn.addEventListener("click", () => {
-    listView.style.display = "block";
+    // zichtbaarheid
+    listView.style.display = "flex";   // belangrijk: flex voor je grid
     mapView.style.display = "none";
 
+    // fullscreen class verwijderen
+    mapView.classList.remove("fullscreen");
+
+    // active states
     listBtn.classList.add("active");
     mapBtn.classList.remove("active");
   });
 
+  // 👉 MAP VIEW
   mapBtn.addEventListener("click", () => {
+    // zichtbaarheid
     listView.style.display = "none";
     mapView.style.display = "block";
 
+    // fullscreen class toevoegen
+    mapView.classList.add("fullscreen");
+
+    // active states
     mapBtn.classList.add("active");
     listBtn.classList.remove("active");
+
+    // Leaflet opnieuw laten tekenen
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 50);
   });
 }
+
 
 /* ----------------------------------------------------
    TAAL SWITCH
@@ -359,10 +121,11 @@ function setupLanguageSwitch() {
       btn.classList.add("active");
 
       updateViewSwitchLabels();
-      populateStatusFilter();
-      populateRarityFilter();
-        updateSortLabels();
-        updateFilterPlaceholders(); 
+      populateStatusFilter(allTrees, currentLanguage);
+      populateRarityFilter(allTrees, currentLanguage);
+      updateSortLabels(currentLanguage);
+      updateFilterPlaceholders();
+
       applyFilters();
     });
   });
@@ -380,7 +143,7 @@ function updateViewSwitchLabels() {
 }
 
 function updateFilterPlaceholders() {
-  const lang = currentLanguage; // neem jouw bestaande taalvariabele
+  const lang = currentLanguage;
 
   const placeholders = {
     nl: {
@@ -398,12 +161,10 @@ function updateFilterPlaceholders() {
   };
 
   document.getElementById("search-bar").placeholder = placeholders[lang].search;
-
   document.querySelector("#sort-select option").textContent = placeholders[lang].sort;
   document.querySelector("#status-filter option").textContent = placeholders[lang].status;
   document.querySelector("#rarity-filter option").textContent = placeholders[lang].rarity;
 }
-
 
 /* ----------------------------------------------------
    START

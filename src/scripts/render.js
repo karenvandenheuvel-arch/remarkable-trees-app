@@ -1,7 +1,7 @@
 'use strict';
 
 import { translations } from './utils.js';
-import { toggleFavorite } from './app.js';
+import { toggleFavorite } from './favorites.js';
 
 /* ----------------------------------------------------
    RENDER LIST
@@ -11,15 +11,17 @@ export function renderTreeList(trees, lang = "nl", favorites = []) {
   list.innerHTML = "";
 
   trees.forEach(tree => {
-    const card = createTreeCard(tree, lang, favorites);
+    const card = createTreeCard(tree, lang, favorites, false); // ⭐ lijst = false
     list.appendChild(card);
   });
 }
 
+
 /* ----------------------------------------------------
    CREATE TREE CARD
 ---------------------------------------------------- */
-export function createTreeCard(tree, lang = "nl", favorites = []) {
+export function createTreeCard(tree, lang = "nl", favorites = [], fromMap = false) {
+
   const card = document.createElement("div");
   card.classList.add("tree-card");
 
@@ -73,9 +75,51 @@ export function createTreeCard(tree, lang = "nl", favorites = []) {
     `;
 
   // KLIK → toggleFavorite (met localStorage)
-  fav.addEventListener("click", () => {
-    toggleFavorite(treeId);
-  });
+fav.addEventListener("click", (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+
+  // ⭐ Bepaal nieuwe state op basis van UI, niet op basis van favorites[]
+  const wasFav = fav.classList.contains("active");
+  const newIsFav = !wasFav;
+
+  toggleFavorite(treeId, !fromMap);
+
+  // ⭐ UI live updaten
+  if (newIsFav) {
+    fav.classList.add("active");
+    fav.innerHTML = `
+      <svg viewBox="0 -960 960 960" class="tree-icon filled">
+        <path d="M558-80H402v-160H120l160-240h-80l280-400 280 400h-80l160 240H558v160Z"
+              fill="currentColor"/>
+      </svg>
+    `;
+  } else {
+    fav.classList.remove("active");
+    fav.innerHTML = `
+      <svg viewBox="0 -960 960 960" class="tree-icon outline">
+        <path d="M558-80H402v-160H120l160-240h-80l280-400 280 400h-80l160 240H558v160Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="60"
+              stroke-linejoin="round"
+              stroke-linecap="round"/>
+      </svg>
+    `;
+  }
+
+  // ⭐ Popup opnieuw openen zodat nieuwe card nieuwe listener krijgt
+  if (fromMap) {
+    const popup = fav.closest(".leaflet-popup");
+    if (popup && popup._source) {
+      const marker = popup._source;
+      marker.closePopup();
+      marker.openPopup();
+    }
+  }
+});
+
+
 
   imgWrapper.appendChild(fav);
 
@@ -112,4 +156,9 @@ dia.textContent = `${translations[lang].crown}: ${
   card.appendChild(link);
 
   return card;
+}
+
+export function createTreeCardHTML(tree, lang = "nl", favorites = []) {
+  const card = createTreeCard(tree, lang, favorites);
+  return card.outerHTML;
 }

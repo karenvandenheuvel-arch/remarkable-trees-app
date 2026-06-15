@@ -92,7 +92,7 @@ header {
 
 .search-wrapper input {
   padding: 0.55rem 0.75rem;
-  padding-left: 2.5rem; /* ruimte voor icoon */
+  padding-left: 2.5rem;
   border: 1px solid #ccc;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.827);
@@ -103,6 +103,32 @@ header {
 
 .search-wrapper input::placeholder {
   color: #666;
+}
+
+.search-wrapper::before {
+  content: "";
+  position: absolute;
+  left: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border: 2px solid #444;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.search-wrapper::after {
+  content: "";
+  position: absolute;
+  left: 1.35rem;
+  top: calc(50% + 6px);
+  width: 7px;
+  height: 2px;
+  background: #444;
+  transform: rotate(45deg);
+  border-radius: 1px;
+  pointer-events: none;
 }
 
 /* Vergrootglas */
@@ -136,6 +162,7 @@ header {
   padding-left:2.5rem !important;
 }
 
+
 /* ----------------------------------------------------
    FILTER CONTROLS
 ---------------------------------------------------- */
@@ -153,12 +180,10 @@ header {
   flex-direction: column;
 }
 
-/* labels verbergen */
 .control-group label {
   display: none;
 }
 
-/* witte velden + zwarte tekst */
 .control-group select,
 .control-group input[type="text"] {
   padding: 0.55rem 0.75rem;
@@ -180,7 +205,6 @@ header {
   color: #666;
 }
 
-/* dropdown-pijl */
 .control-group::after {
   content: "";
   position: absolute;
@@ -194,13 +218,8 @@ header {
   pointer-events: none;
 }
 
-/* Zoekbalk breedte */
-#search-bar {
-  width: 180px;
-}
-
 /* ----------------------------------------------------
-   BUTTONS (ZWART/WIT/GRIJS + SUBTIEL PAARS)
+   BUTTONS
 ---------------------------------------------------- */
 .view-btn,
 .lang-btn,
@@ -231,9 +250,11 @@ header {
   color: white;
 }
 
+
 /* ----------------------------------------------------
-   SLIDERS (PAARS / WIT / GRIJS)
+   SLIDERS
 ---------------------------------------------------- */
+
 input[type="range"] {
   -webkit-appearance: none;
   width: 180px;
@@ -273,6 +294,7 @@ input[type="range"]::-moz-range-thumb {
 .slider-group::after {
   content: none;
 }
+
 
 /* ----------------------------------------------------
    LIST VIEW
@@ -334,6 +356,7 @@ input[type="range"]::-moz-range-thumb {
   align-items: center;
   justify-content: center;
   border-bottom-left-radius: 6px;
+  z-index: 10;
 }
 
 .tree-icon {
@@ -346,7 +369,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .fav-btn.active .filled {
-  color: rgb(89, 229, 163);
+  color: rgb(68, 232, 213);
 }
 
 /* Tekst */
@@ -377,6 +400,65 @@ input[type="range"]::-moz-range-thumb {
 .detail-link:hover {
   color: var(--purple-dark);
   text-decoration: underline;
+}
+
+/* ----------------------------------------------------
+   MAP VIEW
+---------------------------------------------------- */
+#map-view {
+  width: 100%;
+  display: none;
+}
+
+#map-view.fullscreen {
+  position: absolute;
+  top: 120px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.tree-marker-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tree-marker-icon .tree-icon {
+  width: 32px;
+  height: 32px;
+}
+
+/* ----------------------------------------------------
+   POPUP SPECIFIEKE CSS
+---------------------------------------------------- */
+.leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+}
+
+.leaflet-popup-content .tree-card {
+  width: 100%;
+  box-shadow: none;
+  border-radius: 12px;
+}
+
+.leaflet-popup-content .tree-image {
+  position: relative;
+}
+
+.leaflet-popup-content .tree-image img {
+  height: auto;
+}
+
+.leaflet-popup-content .fav-btn {
+  z-index: 9999;
+  pointer-events: auto;
 }
 
 /* ----------------------------------------------------
