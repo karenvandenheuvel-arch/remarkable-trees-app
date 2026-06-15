@@ -14,85 +14,105 @@
     <div class="header-inner">
 
       <!-- RIJ 1 -->
-      <div class="header-row top-row">
-        <div class="header-left">
-          <div id="view-switch">
-            <button id="view-list" class="view-btn active">Lijst</button>
-            <button id="view-map" class="view-btn">Kaart</button>
-          </div>
-        </div>
+<!-- RIJ 1 -->
+<div class="header-row top-row">
 
-        <h1 class="site-title">Remarkable Trees in Brussels</h1>
+  <!-- LINKERKANT -->
+  <div class="header-left">
+    <div id="view-switch">
+      <button id="view-list" class="view-btn active">Lijst</button>
+      <button id="view-map" class="view-btn">Kaart</button>
+    </div>
+  </div>
 
-        <div class="header-right">
-          <div class="favorites-block">
-            <button id="favorites-toggle" class="fav-filter-btn">
-              ❤️ Alleen favorieten
-            </button>
+  <!-- TITEL -->
+  <h1 class="site-title">Remarkable Trees in Brussels</h1>
 
+  <!-- RECHTERKANT -->
+  <div class="header-right">
 
-            <button id="favorites-reset" class="fav-reset-btn">
-              Reset favorieten
-            </button>
+    <!-- FAVORIETEN LINKS VAN TAAL -->
+    <button id="favorites-toggle" class="fav-filter-btn">
+      Alleen favorieten
+    </button>
 
-            <div id="language-switch">
-              <button class="lang-btn active" data-lang="nl">NL</button>
-              <button class="lang-btn" data-lang="fr">FR</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <button id="favorites-reset" class="fav-reset-btn">
+      Reset favorieten
+    </button>
+
+    <!-- TAALKNOPPEN RECHTS -->
+    <div id="language-switch">
+      <button class="lang-btn active" data-lang="nl">NL</button>
+      <button class="lang-btn" data-lang="fr">FR</button>
+    </div>
+
+  </div>
+</div>
+
 
       <!-- RIJ 2 -->
-      <div class="header-row bottom-row">
-        <div class="controls-left">
-          <div class="control-group">
-            <label for="sort-select">Sorteer op</label>
-            <select id="sort-select">
-              <option value="name">Naam</option>
-              <option value="girth">Omtrek</option>
-              <option value="crown">Kruindiameter</option>
-            </select>
-          </div>
+ <div class="header-row bottom-row">
+<div class="controls-left">
 
-          <div class="control-group">
-            <label for="search-bar">Zoek op naam</label>
-            <input id="search-bar" type="text" placeholder="Zoek op naam...">
-          </div>
+  <!-- SORTEREN -->
+  <div class="control-group">
+    <select id="sort-select">
+      <option value="" disabled selected hidden>Sorteer op</option>
+      <option value="name-asc">Naam (A → Z)</option>
+      <option value="name-desc">Naam (Z → A)</option>
+      <option value="girth-desc">Omtrek (groot → klein)</option>
+      <option value="girth-asc">Omtrek (klein → groot)</option>
+      <option value="crown-desc">Kruin (groot → klein)</option>
+      <option value="crown-asc">Kruin (klein → groot)</option>
+    </select>
+  </div>
 
-          <div class="control-group">
-            <label for="status-filter">Filter op status</label>
-            <select id="status-filter">
-              <option value="all">Alle</option>
-              <!-- later dynamisch vullen -->
-            </select>
-          </div>
+  <!-- ZOEKEN -->
+  <div class="search-wrapper">
+    <input id="search-bar" type="text" placeholder="Zoek op naam">
+  </div>
 
-          <div class="control-group">
-            <label for="rarity-filter">Filter op zeldzaamheid</label>
-            <select id="rarity-filter">
-              <option value="all">Alle</option>
-              <option value="low">Gewoon</option>
-              <option value="medium">Bijzonder</option>
-              <option value="high">Zeldzaam</option>
-            </select>
-          </div>
-        </div>
+  <!-- STATUS -->
+  <div class="control-group">
+    <select id="status-filter">
+      <option value="all" selected hidden>Status (alle)</option>
+    </select>
+  </div>
 
-        <div class="controls-right">
-          <div class="control-group slider-group">
-            <label for="girth-slider">Omtrek</label>
-            <input id="girth-slider" type="range" min="0" max="600" step="10">
-            <span id="girth-value"></span>
-          </div>
+  <!-- ZELDZAAMHEID -->
+  <div class="control-group">
+    <select id="rarity-filter">
+      <option value="all" selected hidden>Zeldzaamheid (alle)</option>
+    </select>
+  </div>
 
-          <div class="control-group slider-group">
-            <label for="crown-slider">Diameter top</label>
-            <input id="crown-slider" type="range" min="0" max="40" step="1">
-            <span id="crown-value"></span>
-          </div>
-        </div>
-      </div>
+</div>
+
+
+  <div class="controls-right">
+
+<!-- OMTREK SLIDER -->
+<div class="control-group slider-group">
+  <input id="girth-slider" type="range" min="0" max="600" step="10">
+  <div class="slider-line">
+    <span class="slider-label">Omtrek:</span>
+    <span id="girth-value"></span>
+  </div>
+</div>
+
+<!-- KRUINDIAMETER SLIDER -->
+<div class="control-group slider-group">
+  <input id="crown-slider" type="range" min="0" max="40" step="1">
+  <div class="slider-line">
+    <span class="slider-label">Diameter top:</span>
+    <span id="crown-value"></span>
+  </div>
+</div>
+
+
+  </div>
+</div>
+
 
     </div>
   </header>

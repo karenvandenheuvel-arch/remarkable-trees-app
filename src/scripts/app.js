@@ -12,7 +12,6 @@ let allTrees = [];
 
 const FAVORITES_KEY = "remarkableTreesFavorites";
 let favorites = [];
-
 /* ----------------------------------------------------
    STATUS FILTER
 ---------------------------------------------------- */
@@ -37,7 +36,6 @@ function populateStatusFilter() {
     select.appendChild(opt);
   });
 }
-
 /* ----------------------------------------------------
    RARITY FILTER
 ---------------------------------------------------- */
@@ -56,6 +54,45 @@ function populateRarityFilter() {
     opt.textContent = rarityLabels[lang][rarity] || rarity;
     select.appendChild(opt);
   });
+}
+
+/* ----------------------------------------------------
+   SORT LABELS
+---------------------------------------------------- */
+function updateSortLabels() {
+  const select = document.getElementById("sort-select");
+
+  const labels = {
+    nl: {
+      "name-asc": "Naam (A → Z)",
+      "name-desc": "Naam (Z → A)",
+      "girth-desc": "Omtrek (groot → klein)",
+      "girth-asc": "Omtrek (klein → groot)",
+      "crown-desc": "Kruin (groot → klein)",
+      "crown-asc": "Kruin (klein → groot)"
+    },
+    fr: {
+      "name-asc": "Nom (A → Z)",
+      "name-desc": "Nom (Z → A)",
+      "girth-desc": "Circonférence (grand → petit)",
+      "girth-asc": "Circonférence (petit → grand)",
+      "crown-desc": "Couronne (grand → petit)",
+      "crown-asc": "Couronne (petit → grand)"
+    }
+  };
+
+  const currentValue = select.value;
+
+  select.innerHTML = "";
+
+  Object.entries(labels[currentLanguage]).forEach(([value, label]) => {
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = label;
+    select.appendChild(opt);
+  });
+
+  select.value = currentValue || "name-asc";
 }
 
 /* ----------------------------------------------------
@@ -115,9 +152,65 @@ function applyFilters() {
     filtered = filtered.filter(tree => favorites.includes(tree.id_arbres_cms));
   }
 
+  // ⭐ SORTEREN
+const sortValue = document.getElementById("sort-select").value;
+
+filtered.sort((a, b) => {
+  switch (sortValue) {
+
+    case "name-asc": {
+      const nameA = (currentLanguage === "nl" ? a.nom_nl : a.nom_fr) || "";
+      const nameB = (currentLanguage === "nl" ? b.nom_nl : b.nom_fr) || "";
+      return nameA.localeCompare(nameB);
+    }
+
+    case "name-desc": {
+      const nameA = (currentLanguage === "nl" ? a.nom_nl : a.nom_fr) || "";
+      const nameB = (currentLanguage === "nl" ? b.nom_nl : b.nom_fr) || "";
+      return nameB.localeCompare(nameA);
+    }
+
+    case "girth-desc": {
+      const girthA = Number(a.circonference) || 0;
+      const girthB = Number(b.circonference) || 0;
+      return girthB - girthA; // groot → klein
+    }
+
+    case "girth-asc": {
+      const girthA = Number(a.circonference) || 0;
+      const girthB = Number(b.circonference) || 0;
+      return girthA - girthB; // klein → groot
+    }
+
+    case "crown-desc": {
+      const crownA = Number(a.diametre_cime) || 0;
+      const crownB = Number(b.diametre_cime) || 0;
+      return crownB - crownA; // groot → klein
+    }
+
+    case "crown-asc": {
+      const crownA = Number(a.diametre_cime) || 0;
+      const crownB = Number(b.diametre_cime) || 0;
+      return crownA - crownB; // klein → groot
+    }
+
+    default:
+      return 0;
+  }
+});
+
+
   renderTreeList(filtered, currentLanguage, favorites);
 }
 
+
+
+/* ----------------------------------------------------
+   FILTER SETUP
+---------------------------------------------------- */
+/* ----------------------------------------------------
+   FILTER SETUP
+---------------------------------------------------- */
 /* ----------------------------------------------------
    FILTER SETUP
 ---------------------------------------------------- */
@@ -126,18 +219,26 @@ function setupFilters() {
   document.getElementById("search-bar").addEventListener("input", applyFilters);
   document.getElementById("rarity-filter").addEventListener("change", applyFilters);
 
+  // SLIDERS
   const girthSlider = document.getElementById("girth-slider");
-  const crownSlider = document.getElementById("crown-slider");
+  const girthValue = document.getElementById("girth-value");
 
   girthSlider.addEventListener("input", () => {
-    document.getElementById("girth-value").textContent = girthSlider.value + " cm";
+    girthValue.textContent = "Omtrek: " + girthSlider.value + " cm";
     applyFilters();
   });
 
+  const crownSlider = document.getElementById("crown-slider");
+  const crownValue = document.getElementById("crown-value");
+
   crownSlider.addEventListener("input", () => {
-    document.getElementById("crown-value").textContent = crownSlider.value + " m";
+    crownValue.textContent = "Diameter top: " + crownSlider.value + " m";
     applyFilters();
   });
+
+  // INITIËLE WAARDES TONEN ONMIDDELLIJK
+  girthValue.textContent =  girthSlider.value + " cm";
+  crownValue.textContent = crownSlider.value + " m";
 
   // FAVORIETEN TOGGLE BUTTON
   const favBtn = document.getElementById("favorites-toggle");
@@ -146,12 +247,13 @@ function setupFilters() {
     applyFilters();
   });
 
-document.getElementById("favorites-reset").addEventListener("click", () => {
-  resetFavorites();
-});
+  document.getElementById("favorites-reset").addEventListener("click", () => {
+    resetFavorites();
+  });
 
-
+  document.getElementById("sort-select").addEventListener("change", applyFilters);
 }
+
 
 /* ----------------------------------------------------
    FAVORIETEN
@@ -199,6 +301,8 @@ export async function initApp() {
   updateViewSwitchLabels();
   populateStatusFilter();
   populateRarityFilter();
+  updateSortLabels();
+  updateFilterPlaceholders() 
 
   document.getElementById("girth-value").textContent =
     document.getElementById("girth-slider").value + " cm";
@@ -208,6 +312,8 @@ export async function initApp() {
 
   // FAVORIETENFILTER UIT BIJ START
   document.getElementById("favorites-toggle").classList.remove("active");
+  document.getElementById("sort-select").value = "name-asc";
+
 
   applyFilters();
 }
@@ -255,6 +361,8 @@ function setupLanguageSwitch() {
       updateViewSwitchLabels();
       populateStatusFilter();
       populateRarityFilter();
+        updateSortLabels();
+        updateFilterPlaceholders(); 
       applyFilters();
     });
   });
@@ -270,6 +378,32 @@ function updateViewSwitchLabels() {
   document.getElementById("view-map").textContent =
     translations[currentLanguage].map;
 }
+
+function updateFilterPlaceholders() {
+  const lang = currentLanguage; // neem jouw bestaande taalvariabele
+
+  const placeholders = {
+    nl: {
+      search: "Zoek op naam",
+      sort: "Sorteer op",
+      status: "Status (alle)",
+      rarity: "Zeldzaamheid (alle)"
+    },
+    fr: {
+      search: "Rechercher par nom",
+      sort: "Trier par",
+      status: "Statut (tous)",
+      rarity: "Rareté (tous)"
+    }
+  };
+
+  document.getElementById("search-bar").placeholder = placeholders[lang].search;
+
+  document.querySelector("#sort-select option").textContent = placeholders[lang].sort;
+  document.querySelector("#status-filter option").textContent = placeholders[lang].status;
+  document.querySelector("#rarity-filter option").textContent = placeholders[lang].rarity;
+}
+
 
 /* ----------------------------------------------------
    START
