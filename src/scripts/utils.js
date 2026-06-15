@@ -14,3 +14,16 @@ export const translations = {
     more: "Plus d'infos →"
   }
 };
+
+export const rarityLabels = {
+  nl: {
+    "0": "Gewoon",
+    "0.5": "Bijzonder",
+    "1": "Zeldzaam"
+  },
+  fr: {
+    "0": "Commun",
+    "0.5": "Remarquable",
+    "1": "Rare"
+  }
+};

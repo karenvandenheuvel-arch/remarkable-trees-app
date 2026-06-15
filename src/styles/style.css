@@ -68,6 +68,32 @@ header {
   width: 150px; /* smaller */
 }
 
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.bottom-row {
+  margin-top: 0.75rem;
+}
+
+.controls-left,
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+
 /* ====== BUTTONS ====== */
 .view-btn,
 .lang-btn {
