@@ -10,11 +10,25 @@ export function renderTreeList(trees, lang = "nl", favorites = []) {
   const list = document.getElementById("list-view");
   list.innerHTML = "";
 
+  // ⭐ Geen resultaten → toon boodschap
+  if (trees.length === 0) {
+    const msg = document.createElement("p");
+    msg.classList.add("no-results");
+    msg.textContent =
+      lang === "nl"
+        ? "Geen bomen gevonden die aan je filters voldoen."
+        : "Aucun arbre ne correspond à vos filtres.";
+    list.appendChild(msg);
+    return;
+  }
+
+  // ⭐ Wel resultaten → render cards
   trees.forEach(tree => {
-    const card = createTreeCard(tree, lang, favorites, false); // ⭐ lijst = false
+    const card = createTreeCard(tree, lang, favorites, false);
     list.appendChild(card);
   });
 }
+
 
 
 /* ----------------------------------------------------
