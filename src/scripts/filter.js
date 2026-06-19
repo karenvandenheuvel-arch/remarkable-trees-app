@@ -188,6 +188,50 @@ function populateRarityFilter() {
 }
 
 /* ----------------------------------------------------
+   RESET FILTER
+---------------------------------------------------- */
+
+document.getElementById("reset-filters").addEventListener("click", resetAllFilters);
+export function resetAllFilters() {
+
+  // ⭐ Zoekveld resetten
+  const search = document.getElementById("search-bar");
+  if (search) search.value = "";
+
+  // ⭐ Dropdowns resetten
+  const status = document.getElementById("status-filter");
+  if (status) status.value = "all";
+
+  const rarity = document.getElementById("rarity-filter");
+  if (rarity) rarity.value = "all";
+
+  // ⭐ Omtrek slider resetten
+  const girthSlider = document.getElementById("girth-slider");
+  const girthValue = document.getElementById("girth-value");
+  if (girthSlider && girthValue) {
+    girthSlider.value = 0;
+    girthValue.textContent = "0 cm";
+  }
+
+  // ⭐ Diameter slider resetten
+  const crownSlider = document.getElementById("crown-slider");
+  const crownValue = document.getElementById("crown-value");
+  if (crownSlider && crownValue) {
+    crownSlider.value = 0;
+    crownValue.textContent = "0 m";
+  }
+
+  // ⭐ Favorieten‑toggle UIT zetten (maar favorieten NIET wissen!)
+  const favToggle = document.getElementById("favorites-only");
+  if (favToggle) favToggle.checked = false;
+
+  // ⭐ Filters opnieuw toepassen
+  applyFilters();
+}
+
+
+
+/* ----------------------------------------------------
    SORT LABELS
 ---------------------------------------------------- */
 function updateSortLabels() {

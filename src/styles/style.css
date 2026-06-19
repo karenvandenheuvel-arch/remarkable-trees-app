@@ -202,7 +202,7 @@ header {
   font-size: 0.8rem;
   border-radius: 4px;
   border: 1px solid var(--bxl-border);
-  background: #222;
+  background: #3a3a3a;
   cursor: pointer;
   transition: 0.2s;
   color: white;
@@ -604,6 +604,88 @@ input[type="range"]::-moz-range-thumb {
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.96); }
   to   { opacity: 1; transform: scale(1); }
+}
+
+.filters-left {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1rem;
+  align-items: flex-end;
+}
+
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px; /* zodat ze niet te smal worden */
+}
+
+#filters-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filters-left {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+}
+
+.reset-btn {
+  background: #3a3a3a; /* donkergrijs, consistent met jouw header */
+  color: white;
+  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.reset-btn:hover {
+  background: #5a5a5a; /* iets lichter bij hover */
+}
+
+.reset-btn {
+  margin-bottom: 2px; /* optioneel: align met slider labels */
+}
+
+/* ----------------------------------------------------
+   TAAL-KNOPPEN (NL / FR)
+   - niet actief: grijs
+   - actief: licht paars
+   - hover: donker paars
+---------------------------------------------------- */
+
+/* Niet-actieve taal-knoppen */
+.lang-btn {
+  background: #3a3a3a !important;   /* grijs */
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 0.45rem 0.9rem !important;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+/* Hover op niet-actieve knop */
+.lang-btn:hover {
+  background: var(--purple-dark) !important; /* donker paars */
+}
+
+/* Actieve taal-knop */
+.lang-btn.active {
+  background: var(--purple-mid) !important;  /* licht paars */
+  border: 1px solid var(--purple-mid) !important;
+  color: white !important;
 }
 
 
