@@ -498,6 +498,116 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ----------------------------------------------------
+   DETAIL MODAL (CENTRAAL)
+---------------------------------------------------- */
+
+.detail-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+
+.detail-modal.hidden {
+  display: none;
+}
+
+/* Donkere achtergrond */
+.detail-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(2px);
+}
+
+/* De kaart zelf */
+
+
+.detail-card {
+  position: relative;
+  background: white;
+  color: black;
+  width: 90%;
+  max-width: 340px; /* was 420px */
+  max-height: 90vh; /* nieuw */
+  overflow-y: auto; /* nieuw */
+  border-radius: 12px;
+  padding: 1.2rem;
+  z-index: 3100;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  animation: fadeIn 0.25s ease;
+}
+
+/* Foto */
+.detail-card .detail-image {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.detail-card .detail-image img {
+  width: 100%;
+  height: auto;
+  max-height: 220px; /* nieuw */
+  object-fit: cover; /* nieuw */
+  display: block;
+}
+
+/* Sluitknop */
+.detail-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--bxl-darkgrey);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+
+/* Titel */
+.detail-card h2 {
+  margin: 0 0 0.4rem 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Info */
+.detail-card .info-row {
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.detail-card .info-row strong {
+  color: var(--purple-dark);
+}
+
+/* Links */
+.detail-card a {
+  color: var(--purple-mid);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.detail-card a:hover {
+  color: var(--purple-dark);
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+
+/* ----------------------------------------------------
    RESPONSIVE
 ---------------------------------------------------- */
 @media (max-width: 900px) {

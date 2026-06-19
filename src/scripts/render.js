@@ -155,11 +155,19 @@ dia.textContent = `${translations[lang].crown}: ${
 } m`;
 
 
+
   const link = document.createElement("a");
-  link.href = lang === "nl" ? tree.url_nl : tree.url_fr;
-  link.target = "_blank";
-  link.classList.add("detail-link");
-  link.textContent = translations[lang].more;
+link.href = "#"; 
+link.classList.add("detail-link");
+link.textContent = translations[lang].more;
+
+link.addEventListener("click", (e) => {
+  e.preventDefault();
+  renderDetailModal(tree, lang);
+});
+
+
+
 
   /* ---------------- OPBOUW ---------------- */
   card.appendChild(imgWrapper);
@@ -175,4 +183,45 @@ dia.textContent = `${translations[lang].crown}: ${
 export function createTreeCardHTML(tree, lang = "nl", favorites = []) {
   const card = createTreeCard(tree, lang, favorites);
   return card.outerHTML;
+}
+
+export function renderDetailModal(tree, lang = "nl") {
+  const modal = document.getElementById("detail-modal");
+  const content = document.getElementById("detail-content");
+
+  const lat = tree.geo_point_2d?.lat;
+  const lon = tree.geo_point_2d?.lon;
+  const mapsUrl = lat && lon ? `https://www.google.com/maps?q=${lat},${lon}` : null;
+
+  const officialUrl = lang === "nl" ? tree.url_nl : tree.url_fr;
+
+  content.innerHTML = `
+    <div class="detail-image">
+      <img src="${tree.firstimage}" alt="${tree.nom_fr}">
+    </div>
+
+    <h2>${lang === "nl" ? tree.nom_nl : tree.nom_fr}</h2>
+
+    <div class="info-row"><strong>${translations[lang].status}:</strong> ${lang === "nl" ? tree.statuts_nl : tree.statuts_fr}</div>
+    <div class="info-row"><strong>${translations[lang].rarity}:</strong> ${translations[lang].rarityLabels[tree.rarete] || tree.rarete}</div>
+    <div class="info-row"><strong>${translations[lang].cepee}:</strong> ${tree.cepee || "-"}</div>
+
+    ${mapsUrl ? `<div class="info-row"><a href="${mapsUrl}" target="_blank"> ${translations[lang].viewOnMap}</a></div>` : ""}
+
+    <div class="info-row">
+      <a href="${officialUrl}" target="_blank">
+       ${translations[lang].official}
+      </a>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+
+  modal.querySelector(".detail-close").onclick = () => {
+    modal.classList.add("hidden");
+  };
+
+  modal.querySelector(".detail-backdrop").onclick = () => {
+    modal.classList.add("hidden");
+  };
 }
