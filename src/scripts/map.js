@@ -57,3 +57,49 @@ export function renderMarkers(trees) {
     markers.push(marker);
   });
 }
+
+
+export function locateUser() {
+  if (!navigator.geolocation) {
+    console.warn("Geolocatie wordt niet ondersteund door deze browser.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      console.log("Jouw locatie:", lat, lon);
+
+      // Event uitsturen zodat map.js dit kan oppikken
+      document.dispatchEvent(new CustomEvent("userLocated", {
+        detail: { lat, lon }
+      }));
+    },
+    error => {
+      console.error("Kon locatie niet ophalen:", error.message);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    }
+  );
+}
+
+document.addEventListener("userLocated", (event) => {
+  const { lat, lon } = event.detail;
+
+  // Marker voor gebruiker
+  const userMarker = L.circleMarker([lat, lon], {
+    radius: 8,
+    color: "#ff4081",
+    fillColor: "#ff4081",
+    fillOpacity: 0.9
+  }).addTo(map);
+
+  // Kaart centreren
+  map.setView([lat, lon], 15);
+});
+

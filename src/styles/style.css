@@ -688,6 +688,17 @@ input[type="range"]::-moz-range-thumb {
   color: white !important;
 }
 
+img.lazy {
+  filter: blur(12px);
+  opacity: 0;
+  transition: opacity 0.4s ease-out, filter 0.4s ease-out;
+}
+
+img.loaded {
+  filter: blur(0);
+  opacity: 1;
+}
+
 
 /* ----------------------------------------------------
    RESPONSIVE

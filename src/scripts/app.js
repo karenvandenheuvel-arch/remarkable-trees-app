@@ -7,6 +7,8 @@ import { fetchTrees } from './api.js';
 import { translations } from './utils.js';
 import { initMap } from "./map.js";
 import { map } from "./map.js";
+import { locateUser } from "./map.js";
+
 
 import {
   setupFilters,
@@ -47,23 +49,51 @@ function setupViewSwitch() {
   const listView = document.getElementById("list-view");
   const mapView = document.getElementById("map-view");
 
+  // ⭐ 1. View herstellen bij opstart
+  const savedView = localStorage.getItem("viewMode");
+
+  if (savedView === "map") {
+    // Simuleer klik → voert alle logica correct uit
+    setTimeout(() => mapBtn.click(), 0);
+  } else {
+    // Default = lijst
+    setTimeout(() => listBtn.click(), 0);
+  }
+
+  // ⭐ 2. LIST VIEW
   listBtn.addEventListener("click", () => {
+    // zichtbaarheid
     listView.style.display = "flex";
     mapView.style.display = "none";
+
+    // fullscreen class verwijderen
     mapView.classList.remove("fullscreen");
 
+    // active states
     listBtn.classList.add("active");
     mapBtn.classList.remove("active");
+
+    // ⭐ opslaan
+    localStorage.setItem("viewMode", "list");
   });
 
+  // ⭐ 3. MAP VIEW
   mapBtn.addEventListener("click", () => {
+    // zichtbaarheid
     listView.style.display = "none";
     mapView.style.display = "block";
+
+    // fullscreen class toevoegen
     mapView.classList.add("fullscreen");
 
+    // active states
     mapBtn.classList.add("active");
     listBtn.classList.remove("active");
 
+    // ⭐ opslaan
+    localStorage.setItem("viewMode", "map");
+
+    // Leaflet opnieuw laten tekenen
     setTimeout(() => {
       map.invalidateSize();
     }, 50);
@@ -139,15 +169,32 @@ function updateFilterPlaceholders() {
 ---------------------------------------------------- */
 export async function initApp() {
 
-  // ⭐ juiste taal-knop actief zetten
+  // ⭐ taal herstellen
+  const langButtons = document.querySelectorAll(".lang-btn");
+  langButtons.forEach(b => b.classList.remove("active"));
   document
     .querySelector(`.lang-btn[data-lang="${currentLanguage}"]`)
     ?.classList.add("active");
 
+  // ⭐ data + kaart
   loadFavorites();
   allTrees = await fetchTrees();
   initMap();
 
+  // ⭐ setupViewSwitch pas NA initMap
+  setupViewSwitch();
+
+  // ⭐ view mode herstellen NA setupViewSwitch
+  const savedView = localStorage.getItem("viewMode");
+  setTimeout(() => {
+    if (savedView === "map") {
+      document.getElementById("view-map").click();
+    } else {
+      document.getElementById("view-list").click();
+    }
+  }, 50);
+
+  // ⭐ UI labels & filters
   updateViewSwitchLabels();
   populateStatusFilter(allTrees, currentLanguage);
   populateRarityFilter(allTrees, currentLanguage);
@@ -156,7 +203,6 @@ export async function initApp() {
 
   document.getElementById("girth-value").textContent =
     document.getElementById("girth-slider").value + " cm";
-
   document.getElementById("crown-value").textContent =
     document.getElementById("crown-slider").value + " m";
 
@@ -164,7 +210,49 @@ export async function initApp() {
   document.getElementById("sort-select").value = "name-asc";
 
   applyFilters();
+
+  // ⭐ geolocatie pas starten wanneer de kaart zichtbaar is
+  setTimeout(() => {
+    locateUser();
+  }, 300);
 }
+/* ----------------------------------------------------
+   OBSERVER
+---------------------------------------------------- */
+
+export function initLazyLoading() {
+  const lazyImages = document.querySelectorAll("img.lazy");
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+
+        // ⭐ Alleen lazy load als er een echte foto is
+        if (img.dataset.src) {
+          img.src = img.dataset.src;
+
+          // ⭐ Blur → sharp fade-in
+          img.onload = () => {
+            img.classList.add("loaded");
+          };
+        }
+
+        // ⭐ Class verwijderen (optioneel)
+        img.classList.remove("lazy");
+
+        // ⭐ Stop observer voor deze afbeelding
+        obs.unobserve(img);
+      }
+    });
+  }, {
+    root: null,        // viewport
+    threshold: 0.2     // 20% zichtbaar = laden
+  });
+
+  lazyImages.forEach(img => observer.observe(img));
+}
+
 
 /* ----------------------------------------------------
    START

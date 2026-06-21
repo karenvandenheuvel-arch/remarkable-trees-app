@@ -2,6 +2,8 @@
 
 import { translations } from './utils.js';
 import { toggleFavorite } from './favorites.js';
+import { initLazyLoading } from "./app.js";
+
 
 /* ----------------------------------------------------
    RENDER LIST
@@ -27,6 +29,8 @@ export function renderTreeList(trees, lang = "nl", favorites = []) {
     const card = createTreeCard(tree, lang, favorites, false);
     list.appendChild(card);
   });
+  initLazyLoading();
+  
 }
 
 
@@ -56,11 +60,21 @@ export function createTreeCard(tree, lang = "nl", favorites = [], fromMap = fals
     </svg>";
 
   /* ---------------- FOTO ELEMENT ---------------- */
-  const img = document.createElement("img");
-  const hasImage = Boolean(tree.firstimage);
+/* ---------------- FOTO ELEMENT (LAZY) ---------------- */
+const img = document.createElement("img");
+const hasImage = Boolean(tree.firstimage);
 
-  img.src = hasImage ? tree.firstimage : placeholder;
-  img.alt = hasImage ? tree.nom_fr : "";
+// placeholder blijft zoals je hebt
+img.src = placeholder;
+
+// echte foto pas later laden
+if (hasImage) {
+  img.dataset.src = tree.firstimage;
+}
+
+img.alt = hasImage ? tree.nom_fr : "";
+img.classList.add("lazy");
+
 
   imgWrapper.appendChild(img);
 
