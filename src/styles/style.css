@@ -699,6 +699,12 @@ img.loaded {
   opacity: 1;
 }
 
+.detail-card img {
+  filter: none !important;
+  opacity: 1 !important;
+  transition: none !important;
+}
+
 
 /* ----------------------------------------------------
    RESPONSIVE

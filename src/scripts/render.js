@@ -200,42 +200,69 @@ export function createTreeCardHTML(tree, lang = "nl", favorites = []) {
 }
 
 export function renderDetailModal(tree, lang = "nl") {
+  console.log("MODAL IMAGE:", tree.firstimage);
+
+  console.log("Detail tree:", tree);
+  console.log("firstimage:", tree.firstimage);
   const modal = document.getElementById("detail-modal");
   const content = document.getElementById("detail-content");
 
+  // --- Placeholder (zelfde als in de lijstweergave) ---
+  const placeholder =
+    "data:image/svg+xml;utf8,\
+    <svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300' preserveAspectRatio='xMidYMid slice'>\
+      <rect width='400' height='300' rx='16' ry='16' fill='%23f2f2f2'/>\
+      <path d='M200 40 L140 140 L165 140 L130 200 L165 200 L155 250 L245 250 L235 200 L270 200 L235 140 L260 140 Z' \
+            fill='%23c7c7c7'/>\
+    </svg>";
+
+  // --- Foto bepalen ---
+  const hasImage = Boolean(tree.firstimage);
+  const imageSrc = hasImage ? tree.firstimage : placeholder;
+
+  // --- Google Maps link ---
   const lat = tree.geo_point_2d?.lat;
   const lon = tree.geo_point_2d?.lon;
   const mapsUrl = lat && lon ? `https://www.google.com/maps?q=${lat},${lon}` : null;
 
+  // --- Officiële heritage link ---
   const officialUrl = lang === "nl" ? tree.url_nl : tree.url_fr;
 
+  // --- Veilige tekstvelden ---
+  const name = lang === "nl" ? (tree.nom_nl || tree.nom_fr || "Onbekende boom") 
+                             : (tree.nom_fr || tree.nom_nl || "Arbre inconnu");
+
+  const status = lang === "nl" ? (tree.statuts_nl || "Onbekend") 
+                               : (tree.statuts_fr || "Inconnu");
+
+  const rarity = translations[lang].rarityLabels?.[tree.rarete] || tree.rarete || "-";
+
+  const cepee = tree.cepee || "-";
+
+  // --- HTML van de modal ---
   content.innerHTML = `
     <div class="detail-image">
-      <img src="${tree.firstimage}" alt="${tree.nom_fr}">
+      <img src="${imageSrc}" alt="${name}">
     </div>
 
-    <h2>${lang === "nl" ? tree.nom_nl : tree.nom_fr}</h2>
+    <h2>${name}</h2>
 
-    <div class="info-row"><strong>${translations[lang].status}:</strong> ${lang === "nl" ? tree.statuts_nl : tree.statuts_fr}</div>
-    <div class="info-row"><strong>${translations[lang].rarity}:</strong> ${translations[lang].rarityLabels[tree.rarete] || tree.rarete}</div>
-    <div class="info-row"><strong>${translations[lang].cepee}:</strong> ${tree.cepee || "-"}</div>
+    <div class="info-row"><strong>${translations[lang].status}:</strong> ${status}</div>
+    <div class="info-row"><strong>${translations[lang].rarity}:</strong> ${rarity}</div>
+    <div class="info-row"><strong>${translations[lang].cepee}:</strong> ${cepee}</div>
 
-    ${mapsUrl ? `<div class="info-row"><a href="${mapsUrl}" target="_blank"> ${translations[lang].viewOnMap}</a></div>` : ""}
+    ${mapsUrl ? `<div class="info-row"><a href="${mapsUrl}" target="_blank">${translations[lang].viewOnMap}</a></div>` : ""}
 
-    <div class="info-row">
-      <a href="${officialUrl}" target="_blank">
-       ${translations[lang].official}
-      </a>
-    </div>
+    ${officialUrl ? `
+      <div class="info-row">
+        <a href="${officialUrl}" target="_blank">${translations[lang].official}</a>
+      </div>` : ""}
   `;
 
+  // --- Modal tonen ---
   modal.classList.remove("hidden");
 
-  modal.querySelector(".detail-close").onclick = () => {
-    modal.classList.add("hidden");
-  };
-
-  modal.querySelector(".detail-backdrop").onclick = () => {
-    modal.classList.add("hidden");
-  };
+  // --- Sluiten ---
+  modal.querySelector(".detail-close").onclick = () => modal.classList.add("hidden");
+  modal.querySelector(".detail-backdrop").onclick = () => modal.classList.add("hidden");
 }

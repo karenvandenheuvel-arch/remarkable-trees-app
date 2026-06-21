@@ -1,9 +1,10 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import { createTreeCard } from "./render.js";
+import { createTreeCard, renderDetailModal } from "./render.js";
 import { currentLanguage } from "./app.js";
 import { favorites } from "./favorites.js";
+import { initLazyLoading } from "./app.js";   // ⭐ BELANGRIJK
 
 export let map;
 let markers = [];
@@ -38,6 +39,7 @@ export function initMap() {
 }
 
 export function renderMarkers(trees) {
+  // oude markers verwijderen
   markers.forEach(m => map.removeLayer(m));
   markers = [];
 
@@ -49,15 +51,28 @@ export function renderMarkers(trees) {
 
     const marker = L.marker([lat, lon], { icon: treeMarkerIcon }).addTo(map);
 
-    // ⭐ BELANGRIJK: echte DOM‑card, geen HTML‑string
+    // DOM‑card (geen HTML‑string)
     const card = createTreeCard(tree, currentLanguage, favorites, true);
-
     marker.bindPopup(card, { maxWidth: 350 });
+
+    // ⭐ FIX: popup listeners + lazy loading
+    marker.on("popupopen", () => {
+      // ⭐ FOTO’S IN POPUP LAZY LADEN
+      initLazyLoading();
+
+      // ⭐ DETAIL‑MODAL KOPPELEN
+      const link = document.querySelector(".leaflet-popup .detail-link");
+      if (link) {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          renderDetailModal(tree, currentLanguage);
+        });
+      }
+    });
 
     markers.push(marker);
   });
 }
-
 
 export function locateUser() {
   if (!navigator.geolocation) {
@@ -72,7 +87,6 @@ export function locateUser() {
 
       console.log("Jouw locatie:", lat, lon);
 
-      // Event uitsturen zodat map.js dit kan oppikken
       document.dispatchEvent(new CustomEvent("userLocated", {
         detail: { lat, lon }
       }));
@@ -91,15 +105,12 @@ export function locateUser() {
 document.addEventListener("userLocated", (event) => {
   const { lat, lon } = event.detail;
 
-  // Marker voor gebruiker
-  const userMarker = L.circleMarker([lat, lon], {
+  L.circleMarker([lat, lon], {
     radius: 8,
     color: "#ff4081",
     fillColor: "#ff4081",
     fillOpacity: 0.9
   }).addTo(map);
 
-  // Kaart centreren
   map.setView([lat, lon], 15);
 });
-

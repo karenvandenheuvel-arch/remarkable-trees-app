@@ -5,10 +5,7 @@
 ---------------------------------------------------- */
 import { fetchTrees } from './api.js';
 import { translations } from './utils.js';
-import { initMap } from "./map.js";
-import { map } from "./map.js";
-import { locateUser } from "./map.js";
-
+import { initMap, locateUser, map } from "./map.js";
 
 import {
   setupFilters,
@@ -20,10 +17,7 @@ import {
 
 import {
   loadFavorites,
-  saveFavorites,
-  toggleFavorite,
-  resetFavorites,
-  favorites
+  // saveFavorites, toggleFavorite, resetFavorites, favorites
 } from './favorites.js';
 
 /* ----------------------------------------------------
@@ -49,54 +43,47 @@ function setupViewSwitch() {
   const listView = document.getElementById("list-view");
   const mapView = document.getElementById("map-view");
 
+  if (!listBtn || !mapBtn || !listView || !mapView) {
+    console.error("View‑elementen niet gevonden in de DOM.");
+    return;
+  }
+
   // ⭐ 1. View herstellen bij opstart
   const savedView = localStorage.getItem("viewMode");
 
-  if (savedView === "map") {
-    // Simuleer klik → voert alle logica correct uit
-    setTimeout(() => mapBtn.click(), 0);
-  } else {
-    // Default = lijst
-    setTimeout(() => listBtn.click(), 0);
-  }
+  // nog geen click simuleren hier; dat doen we na initApp()
 
   // ⭐ 2. LIST VIEW
   listBtn.addEventListener("click", () => {
-    // zichtbaarheid
     listView.style.display = "flex";
     mapView.style.display = "none";
 
-    // fullscreen class verwijderen
     mapView.classList.remove("fullscreen");
 
-    // active states
     listBtn.classList.add("active");
     mapBtn.classList.remove("active");
 
-    // ⭐ opslaan
     localStorage.setItem("viewMode", "list");
   });
 
   // ⭐ 3. MAP VIEW
   mapBtn.addEventListener("click", () => {
-    // zichtbaarheid
     listView.style.display = "none";
     mapView.style.display = "block";
 
-    // fullscreen class toevoegen
     mapView.classList.add("fullscreen");
 
-    // active states
     mapBtn.classList.add("active");
     listBtn.classList.remove("active");
 
-    // ⭐ opslaan
     localStorage.setItem("viewMode", "map");
 
     // Leaflet opnieuw laten tekenen
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 50);
+    if (map) {
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 50);
+    }
   });
 }
 
@@ -110,14 +97,11 @@ function setupLanguageSwitch() {
     btn.addEventListener("click", () => {
       currentLanguage = btn.dataset.lang;
 
-      // ⭐ taal opslaan
       localStorage.setItem("preferredLanguage", currentLanguage);
 
-      // active class wisselen
       buttons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
 
-      // UI opnieuw opbouwen
       updateViewSwitchLabels();
       populateStatusFilter(allTrees, currentLanguage);
       populateRarityFilter(allTrees, currentLanguage);
@@ -168,6 +152,7 @@ function updateFilterPlaceholders() {
    INIT
 ---------------------------------------------------- */
 export async function initApp() {
+  console.log("initApp start…");
 
   // ⭐ taal herstellen
   const langButtons = document.querySelectorAll(".lang-btn");
@@ -179,9 +164,11 @@ export async function initApp() {
   // ⭐ data + kaart
   loadFavorites();
   allTrees = await fetchTrees();
+  console.log("Aantal bomen geladen:", allTrees.length);
+
   initMap();
 
-  // ⭐ setupViewSwitch pas NA initMap
+  // ⭐ view switch pas NA initMap
   setupViewSwitch();
 
   // ⭐ view mode herstellen NA setupViewSwitch
@@ -215,11 +202,13 @@ export async function initApp() {
   setTimeout(() => {
     locateUser();
   }, 300);
+
+  console.log("initApp klaar.");
 }
+
 /* ----------------------------------------------------
    OBSERVER
 ---------------------------------------------------- */
-
 export function initLazyLoading() {
   const lazyImages = document.querySelectorAll("img.lazy");
 
@@ -228,36 +217,32 @@ export function initLazyLoading() {
       if (entry.isIntersecting) {
         const img = entry.target;
 
-        // ⭐ Alleen lazy load als er een echte foto is
         if (img.dataset.src) {
           img.src = img.dataset.src;
 
-          // ⭐ Blur → sharp fade-in
           img.onload = () => {
             img.classList.add("loaded");
           };
         }
 
-        // ⭐ Class verwijderen (optioneel)
         img.classList.remove("lazy");
-
-        // ⭐ Stop observer voor deze afbeelding
         obs.unobserve(img);
       }
     });
   }, {
-    root: null,        // viewport
-    threshold: 0.2     // 20% zichtbaar = laden
+    root: null,
+    threshold: 0.2
   });
 
   lazyImages.forEach(img => observer.observe(img));
 }
 
-
 /* ----------------------------------------------------
    START
 ---------------------------------------------------- */
-setupViewSwitch();
-setupLanguageSwitch(); // ⭐ moet vóór initApp()
-setupFilters();
-initApp();
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM geladen, start app…");
+  setupLanguageSwitch();
+  setupFilters();
+  initApp();
+});
