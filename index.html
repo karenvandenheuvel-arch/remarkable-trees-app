@@ -14,131 +14,122 @@
     <div class="header-inner">
 
       <!-- RIJ 1 -->
-<!-- RIJ 1 -->
-<div class="header-row top-row">
+      <div class="header-row top-row">
 
-  <!-- LINKERKANT -->
-  <div class="header-left">
-    <div id="view-switch">
-      <button id="view-list" class="view-btn active">Lijst</button>
-      <button id="view-map" class="view-btn">Kaart</button>
-    </div>
-  </div>
+        <div class="header-left">
+          <div id="view-switch">
+            <button id="view-list" class="view-btn active">Lijst</button>
+            <button id="view-map" class="view-btn">Kaart</button>
+          </div>
+        </div>
 
-  <!-- TITEL -->
-  <h1 class="site-title">Remarkable Trees in Brussels</h1>
+        <h1 class="site-title">Remarkable Trees in Brussels</h1>
 
-  <!-- RECHTERKANT -->
-  <div class="header-right">
+        <div class="header-right">
+          <button id="favorites-toggle" class="fav-filter-btn">Alleen favorieten</button>
+          <button id="favorites-reset" class="fav-reset-btn">Reset favorieten</button>
 
-    <!-- FAVORIETEN LINKS VAN TAAL -->
-    <button id="favorites-toggle" class="fav-filter-btn">
-      Alleen favorieten
-    </button>
-
-    <button id="favorites-reset" class="fav-reset-btn">
-      Reset favorieten
-    </button>
-
-    <!-- TAALKNOPPEN RECHTS -->
-    <div id="language-switch">
-      <button class="lang-btn" data-lang="nl">NL</button>
-      <button class="lang-btn" data-lang="fr">FR</button>
-    </div>
-
-  </div>
-</div>
-
+          <div id="language-switch">
+            <button class="lang-btn" data-lang="nl">NL</button>
+            <button class="lang-btn" data-lang="fr">FR</button>
+          </div>
+        </div>
+      </div>
 
       <!-- RIJ 2 -->
- <div class="header-row bottom-row">
-<div class="controls-left">
+      <div class="header-row bottom-row">
+        <div class="controls-left">
 
-  <!-- SORTEREN -->
-  <div class="control-group">
-    <select id="sort-select">
-      <option value="" disabled selected hidden>Sorteer op</option>
-      <option value="name-asc">Naam (A → Z)</option>
-      <option value="name-desc">Naam (Z → A)</option>
-      <option value="girth-desc">Omtrek (groot → klein)</option>
-      <option value="girth-asc">Omtrek (klein → groot)</option>
-      <option value="crown-desc">Kruin (groot → klein)</option>
-      <option value="crown-asc">Kruin (klein → groot)</option>
-    </select>
-  </div>
+          <div class="control-group">
+            <select id="sort-select">
+              <option value="" disabled selected hidden>Sorteer op</option>
+              <option value="name-asc">Naam (A → Z)</option>
+              <option value="name-desc">Naam (Z → A)</option>
+              <option value="girth-desc">Omtrek (groot → klein)</option>
+              <option value="girth-asc">Omtrek (klein → groot)</option>
+              <option value="crown-desc">Kruin (groot → klein)</option>
+              <option value="crown-asc">Kruin (klein → groot)</option>
+            </select>
+          </div>
 
-  <!-- ZOEKEN -->
-  <div class="search-wrapper">
-    <input id="search-bar" type="text" placeholder="Zoek op naam">
-  </div>
+          <div class="search-wrapper">
+            <input id="search-bar" type="text" placeholder="Zoek op naam">
+          </div>
 
-  <!-- STATUS -->
-  <div class="control-group">
-    <select id="status-filter">
-      <option value="all" selected hidden>Status (alle)</option>
-    </select>
-  </div>
+          <div class="control-group">
+            <select id="status-filter">
+              <option value="all" selected hidden>Status (alle)</option>
+            </select>
+          </div>
 
-  <!-- ZELDZAAMHEID -->
-  <div class="control-group">
-    <select id="rarity-filter">
-      <option value="all" selected hidden>Zeldzaamheid (alle)</option>
-    </select>
-  </div>
-<!-- OMTREK SLIDER -->
-<div class="control-group slider-group">
-  <input id="girth-slider" type="range" min="0" max="600" step="10">
-  <div class="slider-line">
-    <span class="slider-label">Omtrek:</span>
-    <span id="girth-value"></span>
-  </div>
-</div>
+          <div class="control-group">
+            <select id="rarity-filter">
+              <option value="all" selected hidden>Zeldzaamheid (alle)</option>
+            </select>
+          </div>
 
-<!-- KRUINDIAMETER SLIDER -->
-<div class="control-group slider-group">
-  <input id="crown-slider" type="range" min="0" max="40" step="1">
-  <div class="slider-line">
-    <span class="slider-label">Diameter top:</span>
-    <span id="crown-value"></span>
-  </div>
-</div>
+          <div class="control-group slider-group">
+            <input id="girth-slider" type="range" min="0" max="600" step="10">
+            <div class="slider-line">
+              <span class="slider-label">Omtrek:</span>
+              <span id="girth-value"></span>
+            </div>
+          </div>
 
-<button id="reset-filters" class="reset-btn">Reset filters</button>
+          <div class="control-group slider-group">
+            <input id="crown-slider" type="range" min="0" max="40" step="1">
+            <div class="slider-line">
+              <span class="slider-label">Diameter top:</span>
+              <span id="crown-value"></span>
+            </div>
+          </div>
 
+          <button id="reset-filters" class="reset-btn">Reset filters</button>
 
-</div>
-
-
-
-</div>
-
+        </div>
+      </div>
 
     </div>
   </header>
 
+  <main>
 
-<main>
-  <section id="list-view"></section>
+    <section id="list-view"></section>
 
-  <section id="map-view" style="display: none;">
-    <div id="map" class="map"></div>
-  </section>
+    <section id="map-view" style="display: none;">
+      <div id="map" class="map"></div>
 
+      <!-- ⭐ ZIJ-PANEEL -->
+      <div id="walk-panel" class="walk-panel hidden">
+        <h3>Jouw wandeling</h3>
 
-</main>
-<div id="detail-modal" class="detail-modal hidden">
-  <div class="detail-backdrop"></div>
+        <ul id="walk-list"></ul>
 
-  <div class="detail-card">
-    <button class="detail-close">×</button>
-    <div id="detail-content"></div>
+        <div class="walk-summary">
+          <p><strong>Totale afstand:</strong> <span id="walk-total">0 m</span></p>
+          <p><strong>Totale tijd:</strong> <span id="walk-time">0 min</span></p>
+        </div>
+
+        <button id="walk-remove-last" class="walk-btn">Laatste verwijderen</button>
+        <button id="walk-reset" class="walk-btn danger">Wandeling resetten</button>
+      </div>
+
+      <!-- ⭐ Afstand rechtsboven -->
+      <div id="walk-distance" class="walk-info">Totale afstand: 0 m</div>
+    </section>
+
+  </main>
+
+  <div id="detail-modal" class="detail-modal hidden">
+    <div class="detail-backdrop"></div>
+
+    <div class="detail-card">
+      <button class="detail-close">×</button>
+      <div id="detail-content"></div>
+    </div>
   </div>
-</div>
-
 
   <script type="module" src="/src/scripts/app.js"></script>
 
-
 </body>
-
 </html>

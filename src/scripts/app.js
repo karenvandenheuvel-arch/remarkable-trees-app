@@ -20,6 +20,10 @@ import {
   // saveFavorites, toggleFavorite, resetFavorites, favorites
 } from './favorites.js';
 
+
+export const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM2MDQyNDEwYzMyZDQ1NzRhNTNlNzE1ODcxN2EzYzU4IiwiaCI6Im11cm11cjY0In0=";
+
+
 /* ----------------------------------------------------
    STATE
 ---------------------------------------------------- */

@@ -705,6 +705,128 @@ img.loaded {
   transition: none !important;
 }
 
+.walk-info,
+.walk-btn {
+  position: absolute;
+  z-index: 9999;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.walk-btn {
+  top: 10px;
+  right: 10px;
+}
+
+.walk-info {
+  top: 60px;
+  right: 10px;
+}
+
+/* ⭐ Zorg dat de wandeling-knoppen altijd zichtbaar zijn */
+#reset-walk,
+#walk-distance {
+  position: absolute;
+  z-index: 9999;
+  background: white;
+  color: #333 !important;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  font-weight: 600;
+  opacity: 1 !important;
+}
+
+/* ⭐ Posities */
+#reset-walk {
+  top: 10px;
+  right: 10px;
+}
+
+#walk-distance {
+  top: 60px;
+  right: 10px;
+}
+
+.walk-panel {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 260px;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 9999;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.walk-panel.hidden {
+  display: none;
+}
+
+.walk-panel h3 {
+  margin-top: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+#walk-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+#walk-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.walk-summary {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.walk-btn {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #4a6cf7;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.walk-btn.danger {
+  background: #d9534f;
+}
+
+.walk-panel {
+  position: absolute;
+  top: 120px;        /* ⭐ lager zetten zodat het onder de zwarte balk komt */
+  right: 10px;       /* ⭐ rechts zetten zodat het niet onder je filters zit */
+  width: 260px;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 99999;    /* ⭐ hoger dan je header */
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.walk-panel,
+.walk-panel * {
+  color: #222 !important;   /* donkere tekst */
+}
+
+
 
 /* ----------------------------------------------------
    RESPONSIVE
