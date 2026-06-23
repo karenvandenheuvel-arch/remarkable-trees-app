@@ -5,19 +5,24 @@ import { createTreeCard, renderDetailModal } from "./render.js";
 import { currentLanguage } from "./app.js";
 import { favorites } from "./favorites.js";
 import { initLazyLoading } from "./app.js";
-import { ORS_API_KEY } from "./app.js"; // jouw key staat hier, prima
+import { ORS_API_KEY } from "./app.js";
 
+
+// ---------------------------------------------------------
+// ⭐ STATE
+// ---------------------------------------------------------
 export let map;
 let markers = [];
 
-// ⭐ Wandeling state
-let walkPoints = [];
-let walkLine = [];        // altijd array
+let walkPoints = [];      // { lat, lon, name }
+let walkSegments = [];    // { distance, duration, from, to }
+let walkLine = [];        // polyline layers
 let totalDistance = 0;    // meters
-let walkSegments = [];    // segmenten met afstand + tijd
 
 
-// ⭐ MARKER ICON (moet boven renderMarkers staan!)
+// ---------------------------------------------------------
+// ⭐ MARKER ICON
+// ---------------------------------------------------------
 const treeMarkerIcon = L.divIcon({
   className: "tree-marker-icon",
   html: `
@@ -37,7 +42,9 @@ const treeMarkerIcon = L.divIcon({
 });
 
 
+// ---------------------------------------------------------
 // ⭐ ORS ROUTE FETCH
+// ---------------------------------------------------------
 async function fetchWalkingRoute(start, end) {
   const url = "https://api.openrouteservice.org/v2/directions/foot-walking/geojson";
 
@@ -61,7 +68,9 @@ async function fetchWalkingRoute(start, end) {
 }
 
 
+// ---------------------------------------------------------
 // ⭐ MAP INIT
+// ---------------------------------------------------------
 export function initMap() {
   if (map) return;
 
@@ -71,10 +80,14 @@ export function initMap() {
     maxZoom: 19,
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(map);
+
+  loadSavedWalks(); // ⭐ toon opgeslagen wandelingen bij opstart
 }
 
 
+// ---------------------------------------------------------
 // ⭐ MARKERS
+// ---------------------------------------------------------
 export function renderMarkers(trees) {
   markers.forEach(m => map.removeLayer(m));
   markers = [];
@@ -82,7 +95,6 @@ export function renderMarkers(trees) {
   trees.forEach(tree => {
     const lat = tree.geo_point_2d?.lat;
     const lon = tree.geo_point_2d?.lon;
-
     if (!lat || !lon) return;
 
     const marker = L.marker([lat, lon], { icon: treeMarkerIcon }).addTo(map);
@@ -125,12 +137,11 @@ export function renderMarkers(trees) {
 }
 
 
+// ---------------------------------------------------------
 // ⭐ USER LOCATIE
+// ---------------------------------------------------------
 export function locateUser() {
-  if (!navigator.geolocation) {
-    console.warn("Geolocatie wordt niet ondersteund door deze browser.");
-    return;
-  }
+  if (!navigator.geolocation) return;
 
   navigator.geolocation.getCurrentPosition(
     position => {
@@ -160,26 +171,25 @@ document.addEventListener("userLocated", (event) => {
 });
 
 
+// ---------------------------------------------------------
 // ⭐ WANDERING TOEVOEGEN
+// ---------------------------------------------------------
 async function addTreeToWalk(tree) {
   const lat = tree.geo_point_2d?.lat;
   const lon = tree.geo_point_2d?.lon;
-
   if (!lat || !lon) return;
 
-  // Boomnaam voor in het zijpaneel
-let name;
-
-if (currentLanguage === "nl") {
-  name = tree.nom_nl || tree.nom_fr || tree.nom_la || "Onbekende boom";
-} else {
-  name = tree.nom_fr || tree.nom_nl || tree.nom_la || "Arbre inconnu";
-}
-
+  let name;
+  if (currentLanguage === "nl") {
+    name = tree.nom_nl || tree.nom_fr || tree.nom_la || "Onbekende boom";
+  } else {
+    name = tree.nom_fr || tree.nom_nl || tree.nom_la || "Arbre inconnu";
+  }
 
   // Eerste punt
   if (walkPoints.length === 0) {
     walkPoints.push({ lat, lon, name });
+    document.getElementById("walk-panel").classList.remove("hidden"); // ⭐ panel tonen
     updateWalkPanel();
     return;
   }
@@ -204,7 +214,6 @@ if (currentLanguage === "nl") {
 
   // ⭐ POLYLINE
   const latlngs = coords.map(c => [c[1], c[0]]);
-
   const segmentLine = L.polyline(latlngs, {
     color: "#ff4081",
     weight: 4,
@@ -215,82 +224,309 @@ if (currentLanguage === "nl") {
 
   walkPoints.push({ lat, lon, name });
 
+  document.getElementById("walk-panel").classList.remove("hidden"); // ⭐ panel tonen
   updateWalkPanel();
-
   map.fitBounds(segmentLine.getBounds(), { padding: [50, 50] });
 }
 
 
-
-
-
-// ⭐ AFSTAND UI
-function updateDistanceUI() {
-  const el = document.getElementById("walk-distance");
-  if (!el) return;
-
-  let meters = totalDistance;
-  let text = meters < 1000
-    ? `${Math.round(meters)} m`
-    : `${(meters / 1000).toFixed(2)} km`;
-
-  el.textContent = `Totale afstand: ${text}`;
-}
-
-
+// ---------------------------------------------------------
 // ⭐ ZIJPANEEL
+// ---------------------------------------------------------
 function updateWalkPanel() {
   const panel = document.getElementById("walk-panel");
   const list = document.getElementById("walk-list");
   const totalEl = document.getElementById("walk-total");
   const timeEl = document.getElementById("walk-time");
 
-  panel.classList.remove("hidden");
+  panel.classList.remove("hidden"); // ⭐ panel altijd tonen
   list.innerHTML = "";
 
   walkPoints.forEach((p, i) => {
     const li = document.createElement("li");
     li.textContent = `${i + 1}. ${p.name}`;
     list.appendChild(li);
+
+    if (i < walkSegments.length) {
+      const seg = walkSegments[i];
+
+      const meters = seg.distance;
+      const distText = meters < 1000
+        ? `${Math.round(meters)} m`
+        : `${(meters / 1000).toFixed(2)} km`;
+
+      const minutes = Math.round(seg.duration / 60);
+
+      const segLi = document.createElement("li");
+      segLi.classList.add("segment-item");
+      segLi.innerHTML = `
+        <div class="seg-meta">${distText} • ${minutes} min</div>
+      `;
+      list.appendChild(segLi);
+    }
   });
 
-  // totale afstand
-  let meters = totalDistance;
-  totalEl.textContent = meters < 1000
-    ? `${Math.round(meters)} m`
-    : `${(meters / 1000).toFixed(2)} km`;
+  // Totale afstand
+  totalEl.textContent =
+    totalDistance < 1000
+      ? `${Math.round(totalDistance)} m`
+      : `${(totalDistance / 1000).toFixed(2)} km`;
 
-  // totale tijd
-  let seconds = walkSegments.reduce((sum, seg) => sum + seg.duration, 0);
-  let minutes = Math.round(seconds / 60);
+  // Totale tijd
+  const seconds = walkSegments.reduce((sum, seg) => sum + seg.duration, 0);
+  const minutes = Math.round(seconds / 60);
   timeEl.textContent = `${minutes} min`;
 }
 
 
-// ⭐ LAATSTE VERWIJDEREN
-document.getElementById("walk-remove-last").addEventListener("click", () => {
-  if (walkPoints.length <= 1) return;
+// ---------------------------------------------------------
+// ⭐ DOMCONTENTLOADED — ALLE KNOPPEN WERKEN NU ALTIJD
+// ---------------------------------------------------------
+document.addEventListener("DOMContentLoaded", () => {
 
-  walkPoints.pop();
+  const removeLastBtn = document.getElementById("walk-remove-last");
+  const resetBtn = document.getElementById("walk-reset");
+  const saveBtn = document.getElementById("walk-save");
+  const savedList = document.getElementById("saved-walks-list");
 
-  const lastLine = walkLine.pop();
-  map.removeLayer(lastLine);
+  // ⭐ Laatste verwijderen
+  if (removeLastBtn) {
+    removeLastBtn.addEventListener("click", () => {
+      if (walkPoints.length <= 1) return;
 
-  const lastSeg = walkSegments.pop();
-  totalDistance -= lastSeg.distance;
+      walkPoints.pop();
 
-  updateWalkPanel();
+      const lastLine = walkLine.pop();
+      map.removeLayer(lastLine);
+
+      const lastSeg = walkSegments.pop();
+      totalDistance -= lastSeg.distance;
+
+      updateWalkPanel();
+    });
+  }
+
+  // ⭐ Reset
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      walkPoints = [];
+      walkSegments = [];
+      totalDistance = 0;
+
+      walkLine.forEach(line => map.removeLayer(line));
+      walkLine = [];
+
+      updateWalkPanel(); // ⭐ panel blijft zichtbaar maar leeg
+    });
+  }
+
+  // ⭐ Wandeling opslaan
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      const name = prompt("Geef een naam voor deze wandeling:");
+      if (!name) return;
+
+      const saved = JSON.parse(localStorage.getItem("savedWalks") || "[]");
+
+      saved.push({
+        name,
+        points: walkPoints,
+        segments: walkSegments,
+        totalDistance,
+        totalTime: walkSegments.reduce((sum, seg) => sum + seg.duration, 0)
+      });
+
+      localStorage.setItem("savedWalks", JSON.stringify(saved));
+      loadSavedWalks();
+    });
+  }
+
+  // ⭐ Laden / verwijderen
+  if (savedList) {
+    savedList.addEventListener("click", async (e) => {
+      const loadIndex = e.target.dataset.load;
+      const deleteIndex = e.target.dataset.delete;
+
+      const saved = JSON.parse(localStorage.getItem("savedWalks") || "[]");
+
+      // ⭐ Laden
+      if (loadIndex !== undefined) {
+        const walk = saved[loadIndex];
+
+        walkPoints = [];
+        walkSegments = [];
+        totalDistance = 0;
+        walkLine.forEach(line => map.removeLayer(line));
+        walkLine = [];
+
+        for (let i = 0; i < walk.points.length; i++) {
+          const p = walk.points[i];
+
+          if (i === 0) {
+            walkPoints.push(p);
+            continue;
+          }
+
+          const prev = walk.points[i - 1];
+
+          const route = await fetchWalkingRoute(prev, p);
+          const coords = route.features[0].geometry.coordinates;
+          const distance = route.features[0].properties.summary.distance;
+          const duration = route.features[0].properties.summary.duration;
+
+          totalDistance += distance;
+
+          walkSegments.push({
+            distance,
+            duration,
+            from: prev.name,
+            to: p.name
+          });
+
+          const latlngs = coords.map(c => [c[1], c[0]]);
+          const segmentLine = L.polyline(latlngs, {
+            color: "#ff4081",
+            weight: 4,
+            opacity: 0.9
+          }).addTo(map);
+
+          walkLine.push(segmentLine);
+          walkPoints.push(p);
+        }
+
+        document.getElementById("walk-panel").classList.remove("hidden"); // ⭐ panel tonen
+        updateWalkPanel();
+        return;
+      }
+
+      // ⭐ Verwijderen
+      if (deleteIndex !== undefined) {
+        saved.splice(deleteIndex, 1);
+        localStorage.setItem("savedWalks", JSON.stringify(saved));
+        loadSavedWalks();
+      }
+    });
+  }
+
+  // ⭐ Bij DOM klaar: opgeslagen wandelingen tonen
+  loadSavedWalks();
 });
 
 
-// ⭐ RESET VIA PANEEL
-document.getElementById("walk-reset").addEventListener("click", () => {
-  walkPoints = [];
-  walkSegments = [];
-  totalDistance = 0;
+// ---------------------------------------------------------
+// ⭐ WANDELINGEN LADEN FUNCTIE
+// ---------------------------------------------------------
+function loadSavedWalks() {
+  const container = document.getElementById("saved-walks");
+  const list = document.getElementById("saved-walks-list");
 
-  walkLine.forEach(line => map.removeLayer(line));
-  walkLine = [];
+  const saved = JSON.parse(localStorage.getItem("savedWalks") || "[]");
 
-  document.getElementById("walk-panel").classList.add("hidden");
+  if (saved.length === 0) {
+    container.classList.add("hidden");
+    return;
+  }
+
+  container.classList.remove("hidden");
+  list.innerHTML = "";
+
+  saved.forEach((walk, index) => {
+    const li = document.createElement("li");
+   li.innerHTML = `
+  <strong>${walk.name}</strong>
+  <div class="saved-walk-actions">
+    <button data-load="${index}">Laden</button>
+    <button data-delete="${index}" class="danger">Verwijderen</button>
+  </div>
+`;
+
+    list.appendChild(li);
+  });
+}
+
+document.getElementById("walk-export").addEventListener("click", () => {
+  exportWalkAsGpx();
 });
+
+
+function exportWalkAsGpx() {
+  if (walkPoints.length === 0) {
+    alert("Geen wandeling om te exporteren.");
+    return;
+  }
+
+  const gpx = generateGpxFromWalk(walkPoints);
+  downloadGpx(gpx, "wandeling.gpx");
+}
+
+function generateGpxFromWalk(points) {
+  const header = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Remarkable Trees App" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>Wandeling</name>
+    <trkseg>
+`;
+
+  const footer = `
+    </trkseg>
+  </trk>
+</gpx>`;
+
+  const body = points
+    .map(p => `      <trkpt lat="${p.lat}" lon="${p.lon}"><name>${p.name}</name></trkpt>`)
+    .join("\n");
+
+  return header + body + footer;
+}
+
+function downloadGpx(gpxContent, filename) {
+  const blob = new Blob([gpxContent], { type: "application/gpx+xml" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function generateGoogleMapsUrl(points) {
+  if (points.length === 0) return null;
+
+  const base = "https://www.google.com/maps/dir/";
+  const segments = points.map(p => `${p.lat},${p.lon}`).join("/");
+  return base + segments + "/?travelmode=walking";
+}
+
+document.getElementById("walk-open-maps").addEventListener("click", () => {
+  const url = generateGoogleMapsUrl(walkPoints);
+
+  if (!url) {
+    alert("Geen wandeling om te openen.");
+    return;
+  }
+
+  window.open(url, "_blank");
+});
+
+const exportToggle = document.getElementById("walk-export-toggle");
+const exportContent = document.getElementById("walk-export-content");
+const exportArrow = document.querySelector(".walk-export-arrow");
+
+exportToggle.addEventListener("click", () => {
+  const isOpen = exportContent.style.display !== "none";
+
+  if (isOpen) {
+    exportContent.style.display = "none";
+    exportArrow.style.transform = "rotate(-90deg)";
+  } else {
+    exportContent.style.display = "flex";
+    exportArrow.style.transform = "rotate(0deg)";
+  }
+});
+
+// Start collapsed
+exportContent.style.display = "none";
+exportArrow.style.transform = "rotate(-90deg)";
+

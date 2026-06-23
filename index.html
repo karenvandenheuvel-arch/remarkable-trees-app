@@ -96,7 +96,8 @@
 
     <section id="list-view"></section>
 
-    <section id="map-view" style="display: none;">
+    <section id="map-view">
+
       <div id="map" class="map"></div>
 
       <!-- ⭐ ZIJ-PANEEL -->
@@ -110,12 +111,37 @@
           <p><strong>Totale tijd:</strong> <span id="walk-time">0 min</span></p>
         </div>
 
-        <button id="walk-remove-last" class="walk-btn">Laatste verwijderen</button>
-        <button id="walk-reset" class="walk-btn danger">Wandeling resetten</button>
-      </div>
+<button id="walk-remove-last" class="walk-btn">Laatste verwijderen</button>
+<button id="walk-reset" class="walk-btn danger">Wandeling resetten</button>
+<button id="walk-save" class="walk-btn">Wandeling opslaan</button>
 
-      <!-- ⭐ Afstand rechtsboven -->
-      <div id="walk-distance" class="walk-info">Totale afstand: 0 m</div>
+<hr class="walk-section-divider">
+
+<div class="walk-export-section">
+  <div class="walk-export-header" id="walk-export-toggle">
+    <h4 class="walk-section-title">Navigatie & export</h4>
+    <span class="walk-export-arrow">▾</span>
+  </div>
+
+  <div class="walk-export-content" id="walk-export-content">
+    <button id="walk-export" class="walk-btn small">Exporteer</button>
+    <button id="walk-open-maps" class="walk-btn small">Google Maps</button>
+  </div>
+</div>
+
+
+
+
+        <div id="saved-walks" class="saved-walks hidden">
+          <h4>Mijn wandelingen</h4>
+
+          <!-- ⭐ De lijst wordt door JS gevuld -->
+          <ul id="saved-walks-list"></ul>
+
+        </div>
+
+      </div> <!-- einde walk-panel -->
+
     </section>
 
   </main>
@@ -131,5 +157,8 @@
 
   <script type="module" src="/src/scripts/app.js"></script>
 
+
+
 </body>
+
 </html>

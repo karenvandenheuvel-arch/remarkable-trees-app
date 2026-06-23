@@ -705,127 +705,228 @@ img.loaded {
   transition: none !important;
 }
 
-.walk-info,
-.walk-btn {
-  position: absolute;
-  z-index: 9999;
-  background: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-.walk-btn {
-  top: 10px;
-  right: 10px;
-}
-
-.walk-info {
-  top: 60px;
-  right: 10px;
-}
-
-/* ⭐ Zorg dat de wandeling-knoppen altijd zichtbaar zijn */
-#reset-walk,
-#walk-distance {
-  position: absolute;
-  z-index: 9999;
-  background: white;
-  color: #333 !important;
-  padding: 8px 12px;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  font-weight: 600;
-  opacity: 1 !important;
-}
-
-/* ⭐ Posities */
-#reset-walk {
-  top: 10px;
-  right: 10px;
-}
-
-#walk-distance {
-  top: 60px;
-  right: 10px;
-}
-
+/* ⭐ WALK PANEL – clean, zonder rand */
 .walk-panel {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 260px;
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 9999;
+  top: 120px;
+  right: 10px;
+  width: 280px;
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  z-index: 99999;
   max-height: 80vh;
   overflow-y: auto;
-}
-
-.walk-panel.hidden {
-  display: none;
+  border: none;
 }
 
 .walk-panel h3 {
   margin-top: 0;
   font-size: 18px;
+  font-weight: 600;
   color: #333;
 }
 
+/* ⭐ WALK LIST */
 #walk-list {
   list-style: none;
   padding: 0;
-  margin: 10px 0;
+  margin: 12px 0;
 }
 
 #walk-list li {
   padding: 6px 0;
   border-bottom: 1px solid #eee;
-  font-size: 14px;
+  font-size: 15px;
+  color: #222;
 }
 
+/* ⭐ SEGMENT ITEM – subtiel paars lijntje */
+#walk-list .segment-item {
+  list-style: none;
+  margin: 0 0 12px 0;
+  padding-left: 22px;
+  position: relative;
+}
+
+#walk-list .segment-item::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #dcd0ff; /* ⭐ subtiel licht paars */
+  border-radius: 2px;
+}
+
+.segment-item .seg-meta {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* ⭐ SUMMARY */
 .walk-summary {
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: 14px;
+  color: #444;
 }
 
+/* ⭐ SUBTIELE KNOPPEN – kleiner, rustiger, zwart/grijs */
 .walk-btn {
   width: 100%;
-  padding: 8px;
-  margin-top: 10px;
-  border: none;
+  padding: 7px 10px;       /* ⭐ kleiner */
+  margin-top: 8px;
+  border: 1px solid #ccc;  /* ⭐ subtiele rand */
   border-radius: 6px;
-  background: #4a6cf7;
-  color: white;
-  font-weight: bold;
+  background: #f7f7f7;     /* ⭐ lichtgrijs */
+  color: #333;
+  font-weight: 500;
   cursor: pointer;
+  transition: 0.2s;
 }
 
+.walk-btn:hover {
+  background: #e9e9e9;
+  border-color: #bbb;
+}
+
+/* ⭐ Geen rood meer */
 .walk-btn.danger {
-  background: #d9534f;
+  background: #f7f7f7;
+  border-color: #ccc;
+  color: #333;
 }
 
-.walk-panel {
-  position: absolute;
-  top: 120px;        /* ⭐ lager zetten zodat het onder de zwarte balk komt */
-  right: 10px;       /* ⭐ rechts zetten zodat het niet onder je filters zit */
-  width: 260px;
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 99999;    /* ⭐ hoger dan je header */
-  max-height: 80vh;
-  overflow-y: auto;
+.walk-btn.danger:hover {
+  background: #e9e9e9;
 }
 
-.walk-panel,
-.walk-panel * {
-  color: #222 !important;   /* donkere tekst */
+/* ⭐ SAVED WALKS */
+#saved-walks {
+  margin-top: 20px;
 }
 
+#saved-walks h4 {
+  margin-bottom: 10px;
+  font-size: 15px;
+  color: #333;
+}
+
+/* ⭐ Saved walk item */
+#saved-walks-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#saved-walks-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+  color: #222;
+}
+
+/* ⭐ Buttons naast naam – subtiel grijs */
+.saved-walk-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.saved-walk-actions button {
+  padding: 3px 6px;        /* ⭐ kleiner */
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #f7f7f7;
+  color: #333;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.saved-walk-actions button:hover {
+  background: #e9e9e9;
+  border-color: #bbb;
+}
+
+/* ⭐ Danger ook subtiel */
+.saved-walk-actions .danger {
+  background: #f7f7f7;
+  color: #333;
+}
+
+.saved-walk-actions .danger:hover {
+  background: #e9e9e9;
+}
+
+.walk-section-divider {
+  margin: 16px 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+.walk-export-section {
+  margin-top: 10px;
+}
+
+.walk-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+/* Divider */
+.walk-section-divider {
+  margin: 16px 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+/* Header (klikbaar) */
+.walk-export-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.walk-export-arrow {
+  font-size: 14px;
+  color: #666;
+  transition: transform 0.2s ease;
+}
+
+/* Titel */
+.walk-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Inhoud */
+.walk-export-content {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* Kleine knoppen */
+.walk-btn.small {
+  flex: 1;
+  padding: 6px 4px;
+  font-size: 12px;
+}
 
 
 /* ----------------------------------------------------
