@@ -239,9 +239,18 @@ function updateWalkPanel() {
   const totalEl = document.getElementById("walk-total");
   const timeEl = document.getElementById("walk-time");
 
-  panel.classList.remove("hidden"); // ⭐ panel altijd tonen
+  // ⭐ 1. Paneel tonen/verbergen
+  if (walkPoints.length === 0) {
+    panel.classList.add("hidden");
+    return;
+  } else {
+    panel.classList.remove("hidden");
+  }
+
+  // ⭐ 2. Lijst leegmaken
   list.innerHTML = "";
 
+  // ⭐ 3. Punten + segmenten tonen
   walkPoints.forEach((p, i) => {
     const li = document.createElement("li");
     li.textContent = `${i + 1}. ${p.name}`;
@@ -266,17 +275,18 @@ function updateWalkPanel() {
     }
   });
 
-  // Totale afstand
+  // ⭐ 4. Totale afstand
   totalEl.textContent =
     totalDistance < 1000
       ? `${Math.round(totalDistance)} m`
       : `${(totalDistance / 1000).toFixed(2)} km`;
 
-  // Totale tijd
+  // ⭐ 5. Totale tijd
   const seconds = walkSegments.reduce((sum, seg) => sum + seg.duration, 0);
   const minutes = Math.round(seconds / 60);
   timeEl.textContent = `${minutes} min`;
 }
+
 
 
 // ---------------------------------------------------------
@@ -290,21 +300,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedList = document.getElementById("saved-walks-list");
 
   // ⭐ Laatste verwijderen
-  if (removeLastBtn) {
-    removeLastBtn.addEventListener("click", () => {
-      if (walkPoints.length <= 1) return;
+// ⭐ Laatste verwijderen
+if (removeLastBtn) {
+  removeLastBtn.addEventListener("click", () => {
 
-      walkPoints.pop();
+    // ⭐ Geen punten → niets doen
+    if (walkPoints.length === 0) return;
 
-      const lastLine = walkLine.pop();
-      map.removeLayer(lastLine);
+    // ⭐ Als er maar 1 punt is → alles leegmaken
+    if (walkPoints.length === 1) {
+      walkPoints = [];
+      walkSegments = [];
+      totalDistance = 0;
 
-      const lastSeg = walkSegments.pop();
-      totalDistance -= lastSeg.distance;
+      walkLine.forEach(line => map.removeLayer(line));
+      walkLine = [];
 
-      updateWalkPanel();
-    });
-  }
+      updateWalkPanel(); // ⭐ verbergt nu correct het paneel
+      return;
+    }
+
+    // ⭐ Normale verwijdering (meer dan 1 punt)
+    walkPoints.pop();
+
+    const lastLine = walkLine.pop();
+    map.removeLayer(lastLine);
+
+    const lastSeg = walkSegments.pop();
+    totalDistance -= lastSeg.distance;
+
+    updateWalkPanel();
+  });
+}
+
 
   // ⭐ Reset
   if (resetBtn) {
@@ -422,27 +450,43 @@ function loadSavedWalks() {
 
   const saved = JSON.parse(localStorage.getItem("savedWalks") || "[]");
 
+  // ⭐ GEEN opgeslagen wandelingen
   if (saved.length === 0) {
     container.classList.add("hidden");
+
+    // ⭐ Paneel verbergen als er ook geen actieve wandeling is
+    if (walkPoints.length === 0) {
+      document.getElementById("walk-panel").classList.add("hidden");
+    }
+
     return;
   }
 
+  // ⭐ WEL opgeslagen wandelingen
   container.classList.remove("hidden");
   list.innerHTML = "";
 
+  // ⭐ Paneel tonen als er opgeslagen wandelingen zijn
+  //    maar nog GEEN actieve wandeling bezig is
+  if (walkPoints.length === 0) {
+    document.getElementById("walk-panel").classList.remove("hidden");
+  }
+
+  // ⭐ Lijst opbouwen
   saved.forEach((walk, index) => {
     const li = document.createElement("li");
-   li.innerHTML = `
-  <strong>${walk.name}</strong>
-  <div class="saved-walk-actions">
-    <button data-load="${index}">Laden</button>
-    <button data-delete="${index}" class="danger">Verwijderen</button>
-  </div>
-`;
-
+    li.innerHTML = `
+      <strong>${walk.name}</strong>
+      <div class="saved-walk-actions">
+        <button data-load="${index}">Laden</button>
+        <button data-delete="${index}" class="danger">Verwijderen</button>
+      </div>
+    `;
     list.appendChild(li);
   });
 }
+
+
 
 document.getElementById("walk-export").addEventListener("click", () => {
   exportWalkAsGpx();
