@@ -8,7 +8,19 @@ import { renderTreeList } from "./render.js";
 import { renderMarkers } from "./map.js";
 
 /* ----------------------------------------------------
-   APPLY FILTER
+   GENUS LABELS
+---------------------------------------------------- */
+const genusLabels = {
+  Quercus: { nl: "Eiken", fr: "Chênes" },
+  Fagus:   { nl: "Beuken", fr: "Hêtres" },
+  Acer:    { nl: "Esdoorns", fr: "Érables" },
+  Tilia:   { nl: "Lindes", fr: "Tilleuls" },
+  Platanus:{ nl: "Platanen", fr: "Platanes" }
+};
+
+
+/* ----------------------------------------------------
+   APPLY FILTERS
 ---------------------------------------------------- */
 function applyFilters() {
   const statusValue = document.getElementById("status-filter").value;
@@ -19,7 +31,11 @@ function applyFilters() {
 
   /* STATUS */
   if (statusValue !== "all") {
-    filtered = filtered.filter(tree => tree.statuts_fr === statusValue);
+    filtered = filtered.filter(tree => {
+      return currentLanguage === "nl"
+        ? tree.statuts_nl === statusValue
+        : tree.statuts_fr === statusValue;
+    });
   }
 
   /* ZOEKEN */
@@ -64,6 +80,19 @@ function applyFilters() {
     filtered = filtered.filter(tree => favorites.includes(tree.id_arbres_cms));
   }
 
+  /* ⭐ UPDATE SPECIES DROPDOWN (op basis van ALLE filters behalve species) */
+  renderSpeciesDropdown(filtered);
+
+  /* ⭐ SPECIES FILTER */
+  const selectedSpecies = window.selectedSpecies || [];
+
+  if (selectedSpecies.length > 0) {
+    filtered = filtered.filter(tree => {
+      const name = currentLanguage === "nl" ? tree.nom_nl : tree.nom_fr;
+      return selectedSpecies.includes(name);
+    });
+  }
+
   /* SORTEREN */
   const sortValue = document.getElementById("sort-select").value;
 
@@ -98,13 +127,14 @@ function applyFilters() {
     }
   });
 
+  /* RENDER */
   renderTreeList(filtered, currentLanguage, favorites);
   renderMarkers(filtered);
-  
 }
 
+
 /* ----------------------------------------------------
-   FILTER SETUP
+   SETUP FILTERS
 ---------------------------------------------------- */
 function setupFilters() {
   document.getElementById("status-filter").addEventListener("change", applyFilters);
@@ -141,10 +171,12 @@ function setupFilters() {
 
   document.getElementById("favorites-reset").addEventListener("click", () => {
     resetFavorites();
+    applyFilters();
   });
 
   document.getElementById("sort-select").addEventListener("change", applyFilters);
 }
+
 
 /* ----------------------------------------------------
    STATUS FILTER
@@ -157,17 +189,15 @@ function populateStatusFilter() {
 
   statuses.forEach(statusFr => {
     const opt = document.createElement("option");
-    opt.value = statusFr;
+    opt.value = currentLanguage === "nl"
+      ? allTrees.find(t => t.statuts_fr === statusFr)?.statuts_nl || statusFr
+      : statusFr;
 
-    const label =
-      currentLanguage === "nl"
-        ? allTrees.find(t => t.statuts_fr === statusFr)?.statuts_nl || statusFr
-        : statusFr;
-
-    opt.textContent = label;
+    opt.textContent = opt.value;
     select.appendChild(opt);
   });
 }
+
 
 /* ----------------------------------------------------
    RARITY FILTER
@@ -187,25 +217,112 @@ function populateRarityFilter() {
   });
 }
 
-/* ----------------------------------------------------
-   RESET FILTER
----------------------------------------------------- */
 
+/* ----------------------------------------------------
+   CUSTOM SPECIES DROPDOWN
+---------------------------------------------------- */
+function renderSpeciesDropdown(filtered) {
+  const dropdown = document.getElementById("species-dropdown");
+  const selectedBox = dropdown.querySelector(".species-selected");
+  const optionsBox = dropdown.querySelector(".species-options");
+
+  const lang = currentLanguage;
+
+  // huidige selectie
+  const selectedSpecies = new Set(window.selectedSpecies || []);
+
+  // dropdown leegmaken
+  optionsBox.innerHTML = "";
+
+  // groeperen per genus
+  const groups = {};
+
+  filtered.forEach(tree => {
+    const genus = tree.nom_la?.split(" ")[0];
+    if (!genus) return;
+
+    const name = lang === "nl" ? tree.nom_nl : tree.nom_fr;
+
+    if (!groups[genus]) groups[genus] = {};
+    if (!groups[genus][name]) groups[genus][name] = 0;
+
+    groups[genus][name]++;
+  });
+
+  // opbouwen
+  Object.entries(groups).forEach(([genus, species]) => {
+    const label = document.createElement("div");
+    label.className = "group-label";
+    label.textContent = genusLabels[genus]?.[lang] || genus;
+    optionsBox.appendChild(label);
+
+    Object.entries(species).forEach(([name, count]) => {
+      const row = document.createElement("label");
+      row.className = "option";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = name;
+      checkbox.checked = selectedSpecies.has(name);
+
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) selectedSpecies.add(name);
+        else selectedSpecies.delete(name);
+
+        window.selectedSpecies = [...selectedSpecies];
+        applyFilters();
+      });
+
+      row.appendChild(checkbox);
+      row.append(`${name} (${count})`);
+      optionsBox.appendChild(row);
+    });
+  });
+
+  // label updaten
+  if (selectedSpecies.size === 0) {
+    selectedBox.textContent = lang === "nl" ? "Soort (alle)" : "Espèce (toutes)";
+  } else {
+    selectedBox.textContent = [...selectedSpecies].join(", ");
+  }
+
+  // open/dicht togglen
+  selectedBox.onclick = () => {
+    optionsBox.style.display =
+      optionsBox.style.display === "block" ? "none" : "block";
+  };
+
+  // sluiten bij klik buiten
+  document.addEventListener("click", e => {
+    if (!dropdown.contains(e.target)) {
+      optionsBox.style.display = "none";
+    }
+  });
+}
+
+
+/* ----------------------------------------------------
+   RESET FILTERS
+---------------------------------------------------- */
 document.getElementById("reset-filters").addEventListener("click", resetAllFilters);
+
 export function resetAllFilters() {
 
-  // ⭐ Zoekveld resetten
+  // Zoekveld resetten
   const search = document.getElementById("search-bar");
   if (search) search.value = "";
 
-  // ⭐ Dropdowns resetten
+  // Dropdowns resetten
   const status = document.getElementById("status-filter");
   if (status) status.value = "all";
 
   const rarity = document.getElementById("rarity-filter");
   if (rarity) rarity.value = "all";
 
-  // ⭐ Omtrek slider resetten
+  // Species resetten
+  window.selectedSpecies = [];
+
+  // Sliders resetten
   const girthSlider = document.getElementById("girth-slider");
   const girthValue = document.getElementById("girth-value");
   if (girthSlider && girthValue) {
@@ -213,7 +330,6 @@ export function resetAllFilters() {
     girthValue.textContent = "0 cm";
   }
 
-  // ⭐ Diameter slider resetten
   const crownSlider = document.getElementById("crown-slider");
   const crownValue = document.getElementById("crown-value");
   if (crownSlider && crownValue) {
@@ -221,54 +337,13 @@ export function resetAllFilters() {
     crownValue.textContent = "0 m";
   }
 
-  // ⭐ Favorieten‑toggle UIT zetten (maar favorieten NIET wissen!)
-  const favToggle = document.getElementById("favorites-only");
-  if (favToggle) favToggle.checked = false;
+  // Favorieten toggle UIT
+  const favToggle = document.getElementById("favorites-toggle");
+  if (favToggle) favToggle.classList.remove("active");
 
-  // ⭐ Filters opnieuw toepassen
   applyFilters();
 }
 
-
-
-/* ----------------------------------------------------
-   SORT LABELS
----------------------------------------------------- */
-function updateSortLabels() {
-  const select = document.getElementById("sort-select");
-
-  const labels = {
-    nl: {
-      "name-asc": "Naam (A → Z)",
-      "name-desc": "Naam (Z → A)",
-      "girth-desc": "Omtrek (groot → klein)",
-      "girth-asc": "Omtrek (klein → groot)",
-      "crown-desc": "Kruin (groot → klein)",
-      "crown-asc": "Kruin (klein → groot)"
-    },
-    fr: {
-      "name-asc": "Nom (A → Z)",
-      "name-desc": "Nom (Z → A)",
-      "girth-desc": "Circonférence (grand → petit)",
-      "girth-asc": "Circonférence (petit → grand)",
-      "crown-desc": "Couronne (grand → petit)",
-      "crown-asc": "Couronne (petit → grand)"
-    }
-  };
-
-  const currentValue = select.value;
-
-  select.innerHTML = "";
-
-  Object.entries(labels[currentLanguage]).forEach(([value, label]) => {
-    const opt = document.createElement("option");
-    opt.value = value;
-    opt.textContent = label;
-    select.appendChild(opt);
-  });
-
-  select.value = currentValue || "name-asc";
-}
 
 /* ----------------------------------------------------
    EXPORTS
@@ -277,6 +352,5 @@ export {
   applyFilters,
   setupFilters,
   populateStatusFilter,
-  populateRarityFilter,
-  updateSortLabels
+  populateRarityFilter
 };

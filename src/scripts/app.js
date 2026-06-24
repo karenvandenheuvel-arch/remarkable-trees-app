@@ -11,17 +11,13 @@ import {
   setupFilters,
   applyFilters,
   populateStatusFilter,
-  populateRarityFilter,
-  updateSortLabels
+  populateRarityFilter
 } from './filter.js';
 
-import {
-  loadFavorites,
-  // saveFavorites, toggleFavorite, resetFavorites, favorites
-} from './favorites.js';
+import { loadFavorites } from './favorites.js';
 
-
-export const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM2MDQyNDEwYzMyZDQ1NzRhNTNlNzE1ODcxN2EzYzU4IiwiaCI6Im11cm11cjY0In0=";
+export const ORS_API_KEY =
+  "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM2MDQyNDEwYzMyZDQ1NzRhNTNlNzE1ODcxN2EzYzU4IiwiaCI6Im11cm11cjY0In0=";
 
 
 /* ----------------------------------------------------
@@ -29,13 +25,11 @@ export const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6
 ---------------------------------------------------- */
 export let currentLanguage = "nl";
 
-// ⭐ check of er een opgeslagen taal is
 const savedLang = localStorage.getItem("preferredLanguage");
-if (savedLang) {
-  currentLanguage = savedLang;
-}
+if (savedLang) currentLanguage = savedLang;
 
 export let allTrees = [];
+
 
 /* ----------------------------------------------------
    VIEW SWITCH
@@ -47,21 +41,13 @@ function setupViewSwitch() {
   const listView = document.getElementById("list-view");
   const mapView = document.getElementById("map-view");
 
-  if (!listBtn || !mapBtn || !listView || !mapView) {
-    console.error("View‑elementen niet gevonden in de DOM.");
-    return;
-  }
+  if (!listBtn || !mapBtn || !listView || !mapView) return;
 
-  // ⭐ 1. View herstellen bij opstart
   const savedView = localStorage.getItem("viewMode");
 
-  // nog geen click simuleren hier; dat doen we na initApp()
-
-  // ⭐ 2. LIST VIEW
   listBtn.addEventListener("click", () => {
     listView.style.display = "flex";
     mapView.style.display = "none";
-
     mapView.classList.remove("fullscreen");
 
     listBtn.classList.add("active");
@@ -70,11 +56,9 @@ function setupViewSwitch() {
     localStorage.setItem("viewMode", "list");
   });
 
-  // ⭐ 3. MAP VIEW
   mapBtn.addEventListener("click", () => {
     listView.style.display = "none";
     mapView.style.display = "block";
-
     mapView.classList.add("fullscreen");
 
     mapBtn.classList.add("active");
@@ -82,14 +66,12 @@ function setupViewSwitch() {
 
     localStorage.setItem("viewMode", "map");
 
-    // Leaflet opnieuw laten tekenen
     if (map) {
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 50);
+      setTimeout(() => map.invalidateSize(), 50);
     }
   });
 }
+
 
 /* ----------------------------------------------------
    TAAL SWITCH
@@ -100,22 +82,21 @@ function setupLanguageSwitch() {
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
       currentLanguage = btn.dataset.lang;
-
       localStorage.setItem("preferredLanguage", currentLanguage);
 
       buttons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
 
       updateViewSwitchLabels();
-      populateStatusFilter(allTrees, currentLanguage);
-      populateRarityFilter(allTrees, currentLanguage);
-      updateSortLabels(currentLanguage);
+      populateStatusFilter();
+      populateRarityFilter();
       updateFilterPlaceholders();
 
       applyFilters();
     });
   });
 }
+
 
 /* ----------------------------------------------------
    LABELS UPDATEN
@@ -136,13 +117,15 @@ function updateFilterPlaceholders() {
       search: "Zoek op naam",
       sort: "Sorteer op",
       status: "Status (alle)",
-      rarity: "Zeldzaamheid (alle)"
+      rarity: "Zeldzaamheid (alle)",
+      species: "Soort (alle)"
     },
     fr: {
       search: "Rechercher par nom",
       sort: "Trier par",
       status: "Statut (tous)",
-      rarity: "Rareté (tous)"
+      rarity: "Rareté (tous)",
+      species: "Espèce (toutes)"
     }
   };
 
@@ -150,7 +133,11 @@ function updateFilterPlaceholders() {
   document.querySelector("#sort-select option").textContent = placeholders[lang].sort;
   document.querySelector("#status-filter option").textContent = placeholders[lang].status;
   document.querySelector("#rarity-filter option").textContent = placeholders[lang].rarity;
+
+  // ⭐ custom species dropdown
+  document.querySelector(".species-selected").textContent = placeholders[lang].species;
 }
+
 
 /* ----------------------------------------------------
    INIT
@@ -158,24 +145,19 @@ function updateFilterPlaceholders() {
 export async function initApp() {
   console.log("initApp start…");
 
-  // ⭐ taal herstellen
+  // taal herstellen
   const langButtons = document.querySelectorAll(".lang-btn");
   langButtons.forEach(b => b.classList.remove("active"));
   document
     .querySelector(`.lang-btn[data-lang="${currentLanguage}"]`)
     ?.classList.add("active");
 
-  // ⭐ data + kaart
   loadFavorites();
   allTrees = await fetchTrees();
-  console.log("Aantal bomen geladen:", allTrees.length);
 
   initMap();
-
-  // ⭐ view switch pas NA initMap
   setupViewSwitch();
 
-  // ⭐ view mode herstellen NA setupViewSwitch
   const savedView = localStorage.getItem("viewMode");
   setTimeout(() => {
     if (savedView === "map") {
@@ -185,11 +167,9 @@ export async function initApp() {
     }
   }, 50);
 
-  // ⭐ UI labels & filters
   updateViewSwitchLabels();
-  populateStatusFilter(allTrees, currentLanguage);
-  populateRarityFilter(allTrees, currentLanguage);
-  updateSortLabels(currentLanguage);
+  populateStatusFilter();
+  populateRarityFilter();
   updateFilterPlaceholders();
 
   document.getElementById("girth-value").textContent =
@@ -202,13 +182,11 @@ export async function initApp() {
 
   applyFilters();
 
-  // ⭐ geolocatie pas starten wanneer de kaart zichtbaar is
-  setTimeout(() => {
-    locateUser();
-  }, 300);
+  setTimeout(() => locateUser(), 300);
 
   console.log("initApp klaar.");
 }
+
 
 /* ----------------------------------------------------
    OBSERVER
@@ -223,10 +201,7 @@ export function initLazyLoading() {
 
         if (img.dataset.src) {
           img.src = img.dataset.src;
-
-          img.onload = () => {
-            img.classList.add("loaded");
-          };
+          img.onload = () => img.classList.add("loaded");
         }
 
         img.classList.remove("lazy");
@@ -241,12 +216,12 @@ export function initLazyLoading() {
   lazyImages.forEach(img => observer.observe(img));
 }
 
+
 /* ----------------------------------------------------
    START
 ---------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM geladen, start app…");
   setupLanguageSwitch();
-  setupFilters();
   initApp();
+  setupFilters();
 });

@@ -239,8 +239,10 @@ function updateWalkPanel() {
   const totalEl = document.getElementById("walk-total");
   const timeEl = document.getElementById("walk-time");
 
-  // ⭐ 1. Paneel tonen/verbergen
-  if (walkPoints.length === 0) {
+  const saved = JSON.parse(localStorage.getItem("savedWalks") || "[]");
+
+  // ⭐ Paneel verbergen alleen als er niets actief is én niets opgeslagen
+  if (walkPoints.length === 0 && saved.length === 0) {
     panel.classList.add("hidden");
     return;
   } else {
@@ -287,8 +289,6 @@ function updateWalkPanel() {
   timeEl.textContent = `${minutes} min`;
 }
 
-
-
 // ---------------------------------------------------------
 // ⭐ DOMCONTENTLOADED — ALLE KNOPPEN WERKEN NU ALTIJD
 // ---------------------------------------------------------
@@ -301,37 +301,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ⭐ Laatste verwijderen
 // ⭐ Laatste verwijderen
+// ⭐ Laatste verwijderen
+// ⭐ Laatste verwijderen
 if (removeLastBtn) {
   removeLastBtn.addEventListener("click", () => {
-
-    // ⭐ Geen punten → niets doen
     if (walkPoints.length === 0) return;
 
-    // ⭐ Als er maar 1 punt is → alles leegmaken
-    if (walkPoints.length === 1) {
-      walkPoints = [];
-      walkSegments = [];
-      totalDistance = 0;
-
-      walkLine.forEach(line => map.removeLayer(line));
-      walkLine = [];
-
-      updateWalkPanel(); // ⭐ verbergt nu correct het paneel
-      return;
-    }
-
-    // ⭐ Normale verwijdering (meer dan 1 punt)
     walkPoints.pop();
 
     const lastLine = walkLine.pop();
-    map.removeLayer(lastLine);
+    if (lastLine) {
+      map.removeLayer(lastLine);
+    }
 
     const lastSeg = walkSegments.pop();
-    totalDistance -= lastSeg.distance;
+    if (lastSeg) {
+      totalDistance -= lastSeg.distance;
+    }
 
     updateWalkPanel();
   });
 }
+
 
 
   // ⭐ Reset

@@ -932,6 +932,98 @@ img.loaded {
   display: none !important;
 }
 
+/* ----------------------------------------------------
+   SPECIES DROPDOWN — PERFECT MATCH MET ANDERE FILTERS
+---------------------------------------------------- */
+/* ----------------------------------------------------
+   SPECIES DROPDOWN — MATCHT EXACT DE ANDERE FILTERVELDEN
+---------------------------------------------------- */
+/* ----------------------------------------------------
+   SPECIES DROPDOWN — MATCHT EXACT DE ANDERE FILTERVELDEN
+---------------------------------------------------- */
+
+/* Container */
+.control-group .species-dropdown {
+  position: relative;
+  width: 180px; /* exact zoals select */
+}
+
+/* Gesloten veld */
+.control-group .species-selected {
+  padding: 0.35rem 0.6rem; /* exact zoals select */
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.827);
+  color: #666;
+  font-size: 0.85rem; /* exact zoals select */
+  width: 180px; /* exact zoals select */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* Dropdownlijst */
+.control-group .species-options {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 180px; /* exact zoals select */
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 6px 0;
+  z-index: 999;
+  box-sizing: border-box;
+}
+
+/* Genus label */
+.control-group .species-options .group-label {
+  font-weight: bold;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  background: var(--bxl-lightgrey);
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+/* Optie */
+.control-group .species-options .option {
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #222;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.control-group .species-options .option:hover {
+  background: #f0f0f0;
+}
+
+/* Checkbox */
+.control-group .species-options input[type="checkbox"] {
+  transform: scale(1.1);
+}
+
+.control-group .species-dropdown,
+.control-group .species-selected,
+.control-group .species-options {
+  width: 240px;
+}
+
+.control-group .species-selected {
+  height: 27px; /* exact dezelfde hoogte als je select-velden */
+  line-height: 34px; /* perfecte verticale centrering */
+}
+
+
 
 /* ----------------------------------------------------
    RESPONSIVE

@@ -56,6 +56,15 @@
             <input id="search-bar" type="text" placeholder="Zoek op naam">
           </div>
 
+          <!-- ⭐ GECORRIGEERDE SOORT-FILTER -->
+          <div class="control-group">
+            <div class="species-dropdown" id="species-dropdown">
+              <div class="species-selected">Soort (alle)</div>
+              <div class="species-options"></div>
+            </div>
+          </div>
+          <!-- ⭐ EINDE FIX -->
+
           <div class="control-group">
             <select id="status-filter">
               <option value="all" selected hidden>Status (alle)</option>
@@ -111,36 +120,30 @@
           <p><strong>Totale tijd:</strong> <span id="walk-time">0 min</span></p>
         </div>
 
-<button id="walk-remove-last" class="walk-btn">Laatste verwijderen</button>
-<button id="walk-reset" class="walk-btn danger">Wandeling resetten</button>
-<button id="walk-save" class="walk-btn">Wandeling opslaan</button>
+        <button id="walk-remove-last" class="walk-btn">Laatste verwijderen</button>
+        <button id="walk-reset" class="walk-btn danger">Wandeling resetten</button>
+        <button id="walk-save" class="walk-btn">Wandeling opslaan</button>
 
-<hr class="walk-section-divider">
+        <hr class="walk-section-divider">
 
-<div class="walk-export-section">
-  <div class="walk-export-header" id="walk-export-toggle">
-    <h4 class="walk-section-title">Navigatie & export</h4>
-    <span class="walk-export-arrow">▾</span>
-  </div>
+        <div class="walk-export-section">
+          <div class="walk-export-header" id="walk-export-toggle">
+            <h4 class="walk-section-title">Navigatie & export</h4>
+            <span class="walk-export-arrow">▾</span>
+          </div>
 
-  <div class="walk-export-content" id="walk-export-content">
-    <button id="walk-export" class="walk-btn small">Exporteer</button>
-    <button id="walk-open-maps" class="walk-btn small">Google Maps</button>
-  </div>
-</div>
-
-
-
+          <div class="walk-export-content" id="walk-export-content">
+            <button id="walk-export" class="walk-btn small">Exporteer</button>
+            <button id="walk-open-maps" class="walk-btn small">Google Maps</button>
+          </div>
+        </div>
 
         <div id="saved-walks" class="saved-walks hidden">
           <h4>Mijn wandelingen</h4>
-
-          <!-- ⭐ De lijst wordt door JS gevuld -->
           <ul id="saved-walks-list"></ul>
-
         </div>
 
-      </div> <!-- einde walk-panel -->
+      </div>
 
     </section>
 
@@ -156,8 +159,6 @@
   </div>
 
   <script type="module" src="/src/scripts/app.js"></script>
-
-
 
 </body>
 
