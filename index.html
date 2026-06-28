@@ -56,14 +56,13 @@
             <input id="search-bar" type="text" placeholder="Zoek op naam">
           </div>
 
-          <!-- ⭐ GECORRIGEERDE SOORT-FILTER -->
+          <!-- ⭐ SOORT-FILTER -->
           <div class="control-group">
             <div class="species-dropdown" id="species-dropdown">
               <div class="species-selected">Soort (alle)</div>
               <div class="species-options"></div>
             </div>
           </div>
-          <!-- ⭐ EINDE FIX -->
 
           <div class="control-group">
             <select id="status-filter">
@@ -75,6 +74,15 @@
             <select id="rarity-filter">
               <option value="all" selected hidden>Zeldzaamheid (alle)</option>
             </select>
+          </div>
+
+          <!-- ⭐ AFSTAND-SLIDER -->
+          <div class="control-group slider-group">
+            <input id="distance-slider" type="range" min="0" max="5000" step="100" value="0">
+            <div class="slider-line">
+              <span class="slider-label">Afstand:</span>
+              <span id="distance-value">0 m</span>
+            </div>
           </div>
 
           <div class="control-group slider-group">

@@ -19,6 +19,30 @@ import { loadFavorites } from './favorites.js';
 export const ORS_API_KEY =
   "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM2MDQyNDEwYzMyZDQ1NzRhNTNlNzE1ODcxN2EzYzU4IiwiaCI6Im11cm11cjY0In0=";
 
+export  let userLat = null;
+export let userLon = null;
+
+document.addEventListener("userLocated", (event) => {
+  userLat = event.detail.lat;
+  userLon = event.detail.lon;
+});
+
+function distance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // straal van de aarde in meters
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(Δφ / 2) ** 2 +
+    Math.cos(φ1) * Math.cos(φ2) *
+    Math.sin(Δλ / 2) ** 2;
+
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+
 
 /* ----------------------------------------------------
    STATE

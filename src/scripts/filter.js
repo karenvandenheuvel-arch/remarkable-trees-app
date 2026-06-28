@@ -6,6 +6,8 @@ import { favorites, resetFavorites } from "./favorites.js";
 import { rarityLabels } from "./utils.js";
 import { renderTreeList } from "./render.js";
 import { renderMarkers } from "./map.js";
+import { userLat, userLon } from "./app.js";
+
 
 /* ----------------------------------------------------
    GENUS LABELS
@@ -17,6 +19,21 @@ const genusLabels = {
   Tilia:   { nl: "Lindes", fr: "Tilleuls" },
   Platanus:{ nl: "Platanen", fr: "Platanes" }
 };
+
+function distance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // straal van de aarde in meters
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(Δφ / 2) ** 2 +
+    Math.cos(φ1) * Math.cos(φ2) *
+    Math.sin(Δλ / 2) ** 2;
+
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 
 /* ----------------------------------------------------
@@ -127,6 +144,21 @@ function applyFilters() {
     }
   });
 
+  // ⭐ AFSTANDS-FILTER
+const selectedRadius = Number(document.getElementById("distance-slider").value);
+
+if (userLat && userLon && selectedRadius > 0) {
+  filtered = filtered.filter(tree => {
+    const lat = tree.geo_point_2d.lat;
+    const lon = tree.geo_point_2d.lon;
+
+    const d = distance(userLat, userLon, lat, lon); // meters
+
+    return d <= selectedRadius;
+  });
+}
+
+
   /* RENDER */
   renderTreeList(filtered, currentLanguage, favorites);
   renderMarkers(filtered);
@@ -158,6 +190,15 @@ function setupFilters() {
     applyFilters();
   });
 
+  const distanceSlider = document.getElementById("distance-slider");
+const distanceValue = document.getElementById("distance-value");
+
+distanceSlider.addEventListener("input", () => {
+  distanceValue.textContent = distanceSlider.value + " m";
+  applyFilters();
+});
+
+
   // INITIËLE WAARDES
   girthValue.textContent = girthSlider.value + " cm";
   crownValue.textContent = crownSlider.value + " m";
@@ -175,6 +216,9 @@ function setupFilters() {
   });
 
   document.getElementById("sort-select").addEventListener("change", applyFilters);
+
+
+
 }
 
 
@@ -337,12 +381,25 @@ export function resetAllFilters() {
     crownValue.textContent = "0 m";
   }
 
+  // ⭐ Afstand-slider resetten
+const distanceSlider = document.getElementById("distance-slider");
+const distanceValue = document.getElementById("distance-value");
+if (distanceSlider && distanceValue) {
+  distanceSlider.value = 0;
+  distanceValue.textContent = "0 m";
+}
+
+
   // Favorieten toggle UIT
   const favToggle = document.getElementById("favorites-toggle");
   if (favToggle) favToggle.classList.remove("active");
 
   applyFilters();
 }
+
+
+
+
 
 
 /* ----------------------------------------------------
