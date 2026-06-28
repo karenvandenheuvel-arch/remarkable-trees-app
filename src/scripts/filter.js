@@ -1,13 +1,16 @@
 /* ----------------------------------------------------
    IMPORTS
 ---------------------------------------------------- */
-import { allTrees, currentLanguage } from "./app.js";
+import { allTrees, currentLanguage, userLat, userLon } from "./app.js";
 import { favorites, resetFavorites } from "./favorites.js";
 import { rarityLabels } from "./utils.js";
 import { renderTreeList } from "./render.js";
 import { renderMarkers } from "./map.js";
-import { userLat, userLon } from "./app.js";
+import noUiSlider from "nouislider";
+import "nouislider/dist/nouislider.css";
 
+let girthSlider;
+let crownSlider;
 
 /* ----------------------------------------------------
    GENUS LABELS
@@ -21,7 +24,7 @@ const genusLabels = {
 };
 
 function distance(lat1, lon1, lat2, lon2) {
-  const R = 6371e3; // straal van de aarde in meters
+  const R = 6371e3;
   const φ1 = lat1 * Math.PI / 180;
   const φ2 = lat2 * Math.PI / 180;
   const Δφ = (lat2 - lat1) * Math.PI / 180;
@@ -34,7 +37,6 @@ function distance(lat1, lon1, lat2, lon2) {
 
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
-
 
 /* ----------------------------------------------------
    APPLY FILTERS
@@ -68,24 +70,31 @@ function applyFilters() {
     filtered = filtered.filter(tree => String(tree.rarete) === rarityValue);
   }
 
-  /* SLIDERS */
-  const girthSliderValue = Number(document.getElementById("girth-slider").value);
-  const crownMin = Number(document.getElementById("crown-slider").value);
+  /* OMTREK — DUAL RANGE */
+  if (girthSlider?.noUiSlider) {
+    const [girthMinCm, girthMaxCm] = girthSlider.noUiSlider.get().map(Number);
+    const girthMinM = girthMinCm / 100;
+    const girthMaxM = girthMaxCm / 100;
 
-  // OMTREK (cm → m)
-  if (girthSliderValue > 0) {
-    const girthMinMeters = girthSliderValue / 100;
     filtered = filtered.filter(tree => {
-      const girth = Number(tree.circonference);
-      return !isNaN(girth) && girth >= girthMinMeters;
+      const raw = tree.circonference;
+      if (raw == null) return false;
+
+      const girth = Number(String(raw).replace(",", "."));
+      return !isNaN(girth) && girth >= girthMinM && girth <= girthMaxM;
     });
   }
 
-  // KRUINDIAMETER
-  if (crownMin > 0) {
+  /* DIAMETER TOP — DUAL RANGE */
+  if (crownSlider?.noUiSlider) {
+    const [crownMin, crownMax] = crownSlider.noUiSlider.get().map(Number);
+
     filtered = filtered.filter(tree => {
-      const crown = Number(tree.diametre_cime);
-      return !isNaN(crown) && crown >= crownMin;
+      const raw = tree.diametre_cime;
+      if (raw == null) return false;
+
+      const crown = Number(String(raw).replace(",", "."));
+      return !isNaN(crown) && crown >= crownMin && crown <= crownMax;
     });
   }
 
@@ -97,10 +106,10 @@ function applyFilters() {
     filtered = filtered.filter(tree => favorites.includes(tree.id_arbres_cms));
   }
 
-  /* ⭐ UPDATE SPECIES DROPDOWN (op basis van ALLE filters behalve species) */
+  /* SPECIES DROPDOWN UPDATEN */
   renderSpeciesDropdown(filtered);
 
-  /* ⭐ SPECIES FILTER */
+  /* SPECIES FILTER */
   const selectedSpecies = window.selectedSpecies || [];
 
   if (selectedSpecies.length > 0) {
@@ -144,20 +153,44 @@ function applyFilters() {
     }
   });
 
-  // ⭐ AFSTANDS-FILTER
-const selectedRadius = Number(document.getElementById("distance-slider").value);
+  /* AFSTAND */
+  const selectedRadius = Number(document.getElementById("distance-slider").value);
 
-if (userLat && userLon && selectedRadius > 0) {
-  filtered = filtered.filter(tree => {
-    const lat = tree.geo_point_2d.lat;
-    const lon = tree.geo_point_2d.lon;
+  if (userLat && userLon && selectedRadius > 0) {
+    filtered = filtered.filter(tree => {
+      const lat = tree.geo_point_2d.lat;
+      const lon = tree.geo_point_2d.lon;
 
-    const d = distance(userLat, userLon, lat, lon); // meters
+      const d = distance(userLat, userLon, lat, lon);
+      return d <= selectedRadius;
+    });
+  }
 
-    return d <= selectedRadius;
-  });
-}
+  /* ⭐ UPDATE SLIDER VALUES IN UI — FIX VOOR UNDEFINED */
 
+  // --- OMTREK ---
+  if (girthSlider?.noUiSlider) {
+    const girth = girthSlider.noUiSlider.get();
+
+    if (!girth || girth[0] === undefined || girth[1] === undefined) {
+      document.getElementById("girth-value").textContent = "0 – 600 cm";
+    } else {
+      document.getElementById("girth-value").textContent =
+        `${Math.round(girth[0])} – ${Math.round(girth[1])} cm`;
+    }
+  }
+
+  // --- DIAMETER TOP ---
+  if (crownSlider?.noUiSlider) {
+    const crown = crownSlider.noUiSlider.get();
+
+    if (!crown || crown[0] === undefined || crown[1] === undefined) {
+      document.getElementById("crown-value").textContent = "0 – 40 m";
+    } else {
+      document.getElementById("crown-value").textContent =
+        `${Math.round(crown[0])} – ${Math.round(crown[1])} m`;
+    }
+  }
 
   /* RENDER */
   renderTreeList(filtered, currentLanguage, favorites);
@@ -173,35 +206,56 @@ function setupFilters() {
   document.getElementById("search-bar").addEventListener("input", applyFilters);
   document.getElementById("rarity-filter").addEventListener("change", applyFilters);
 
-  /* SLIDERS */
-  const girthSlider = document.getElementById("girth-slider");
-  const girthValue = document.getElementById("girth-value");
+  /* AFSTAND */
+  const distanceSlider = document.getElementById("distance-slider");
+  const distanceValue = document.getElementById("distance-value");
 
-  girthSlider.addEventListener("input", () => {
-    girthValue.textContent = girthSlider.value + " cm";
+  distanceSlider.addEventListener("input", () => {
+    distanceValue.textContent = distanceSlider.value + " m";
     applyFilters();
   });
 
-  const crownSlider = document.getElementById("crown-slider");
+  /* OMTREK — DUAL RANGE SLIDER */
+  girthSlider = document.getElementById("girth-slider");
+  crownSlider = document.getElementById("crown-slider");
+
+  const girthValue = document.getElementById("girth-value");
   const crownValue = document.getElementById("crown-value");
 
-  crownSlider.addEventListener("input", () => {
-    crownValue.textContent = crownSlider.value + " m";
+  noUiSlider.create(girthSlider, {
+    start: [0, 600],
+    connect: true,
+    range: {
+      min: 0,
+      max: 600
+    },
+    step: 10
+  });
+
+  girthSlider.noUiSlider.on("update", (values) => {
+    const min = Math.round(values[0]);
+    const max = Math.round(values[1]);
+    girthValue.textContent = `${min} – ${max} cm`;
     applyFilters();
   });
 
-  const distanceSlider = document.getElementById("distance-slider");
-const distanceValue = document.getElementById("distance-value");
+  /* DIAMETER TOP — DUAL RANGE SLIDER */
+  noUiSlider.create(crownSlider, {
+    start: [0, 40],
+    connect: true,
+    range: {
+      min: 0,
+      max: 40
+    },
+    step: 1
+  });
 
-distanceSlider.addEventListener("input", () => {
-  distanceValue.textContent = distanceSlider.value + " m";
-  applyFilters();
-});
-
-
-  // INITIËLE WAARDES
-  girthValue.textContent = girthSlider.value + " cm";
-  crownValue.textContent = crownSlider.value + " m";
+  crownSlider.noUiSlider.on("update", (values) => {
+    const min = Math.round(values[0]);
+    const max = Math.round(values[1]);
+    crownValue.textContent = `${min} – ${max} m`;
+    applyFilters();
+  });
 
   /* FAVORIETEN */
   const favBtn = document.getElementById("favorites-toggle");
@@ -215,10 +269,12 @@ distanceSlider.addEventListener("input", () => {
     applyFilters();
   });
 
+  /* SORTEREN */
   document.getElementById("sort-select").addEventListener("change", applyFilters);
 
-
-
+  /* ⭐ INITIAL FALLBACK (alleen bij eerste load nodig) */
+  document.getElementById("girth-value").textContent = "0 – 600 cm";
+  document.getElementById("crown-value").textContent = "0 – 40 m";
 }
 
 
@@ -242,7 +298,6 @@ function populateStatusFilter() {
   });
 }
 
-
 /* ----------------------------------------------------
    RARITY FILTER
 ---------------------------------------------------- */
@@ -261,7 +316,6 @@ function populateRarityFilter() {
   });
 }
 
-
 /* ----------------------------------------------------
    CUSTOM SPECIES DROPDOWN
 ---------------------------------------------------- */
@@ -271,14 +325,10 @@ function renderSpeciesDropdown(filtered) {
   const optionsBox = dropdown.querySelector(".species-options");
 
   const lang = currentLanguage;
-
-  // huidige selectie
   const selectedSpecies = new Set(window.selectedSpecies || []);
 
-  // dropdown leegmaken
   optionsBox.innerHTML = "";
 
-  // groeperen per genus
   const groups = {};
 
   filtered.forEach(tree => {
@@ -293,7 +343,6 @@ function renderSpeciesDropdown(filtered) {
     groups[genus][name]++;
   });
 
-  // opbouwen
   Object.entries(groups).forEach(([genus, species]) => {
     const label = document.createElement("div");
     label.className = "group-label";
@@ -323,20 +372,17 @@ function renderSpeciesDropdown(filtered) {
     });
   });
 
-  // label updaten
   if (selectedSpecies.size === 0) {
     selectedBox.textContent = lang === "nl" ? "Soort (alle)" : "Espèce (toutes)";
   } else {
     selectedBox.textContent = [...selectedSpecies].join(", ");
   }
 
-  // open/dicht togglen
   selectedBox.onclick = () => {
     optionsBox.style.display =
       optionsBox.style.display === "block" ? "none" : "block";
   };
 
-  // sluiten bij klik buiten
   document.addEventListener("click", e => {
     if (!dropdown.contains(e.target)) {
       optionsBox.style.display = "none";
@@ -344,63 +390,48 @@ function renderSpeciesDropdown(filtered) {
   });
 }
 
-
 /* ----------------------------------------------------
    RESET FILTERS
 ---------------------------------------------------- */
 document.getElementById("reset-filters").addEventListener("click", resetAllFilters);
 
 export function resetAllFilters() {
-
-  // Zoekveld resetten
   const search = document.getElementById("search-bar");
   if (search) search.value = "";
 
-  // Dropdowns resetten
   const status = document.getElementById("status-filter");
   if (status) status.value = "all";
 
   const rarity = document.getElementById("rarity-filter");
   if (rarity) rarity.value = "all";
 
-  // Species resetten
   window.selectedSpecies = [];
 
-  // Sliders resetten
-  const girthSlider = document.getElementById("girth-slider");
-  const girthValue = document.getElementById("girth-value");
-  if (girthSlider && girthValue) {
-    girthSlider.value = 0;
-    girthValue.textContent = "0 cm";
+  // dual sliders via noUiSlider resetten
+  if (girthSlider?.noUiSlider) {
+    girthSlider.noUiSlider.set([0, 600]);
+    const girthValue = document.getElementById("girth-value");
+    if (girthValue) girthValue.textContent = "0 – 600 cm";
   }
 
-  const crownSlider = document.getElementById("crown-slider");
-  const crownValue = document.getElementById("crown-value");
-  if (crownSlider && crownValue) {
-    crownSlider.value = 0;
-    crownValue.textContent = "0 m";
+  if (crownSlider?.noUiSlider) {
+    crownSlider.noUiSlider.set([0, 40]);
+    const crownValue = document.getElementById("crown-value");
+    if (crownValue) crownValue.textContent = "0 – 40 m";
   }
 
-  // ⭐ Afstand-slider resetten
-const distanceSlider = document.getElementById("distance-slider");
-const distanceValue = document.getElementById("distance-value");
-if (distanceSlider && distanceValue) {
-  distanceSlider.value = 0;
-  distanceValue.textContent = "0 m";
-}
+  const distanceSlider = document.getElementById("distance-slider");
+  const distanceValue = document.getElementById("distance-value");
+  if (distanceSlider && distanceValue) {
+    distanceSlider.value = 0;
+    distanceValue.textContent = "0 m";
+  }
 
-
-  // Favorieten toggle UIT
   const favToggle = document.getElementById("favorites-toggle");
   if (favToggle) favToggle.classList.remove("active");
 
   applyFilters();
 }
-
-
-
-
-
 
 /* ----------------------------------------------------
    EXPORTS

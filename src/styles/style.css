@@ -1039,3 +1039,75 @@ img.loaded {
     width: 100%;
   }
 }
+
+/* ----------------------------------------------------
+   noUiSlider — witte horizontale lijn
+---------------------------------------------------- */
+
+.noUi-target {
+  background: white !important;     /* ⭐ witte lijn */
+  border-radius: 4px !important;
+  border: none !important;
+  height: 5px !important;
+  box-shadow: none !important;
+}
+
+/* Geselecteerde range blijft paars */
+.noUi-connect {
+  background: var(--purple-mid) !important;
+}
+
+/* Handles blijven paars met witte rand */
+.noUi-handle {
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 50% !important;
+  background: var(--purple-mid) !important;
+  border: 2px solid white !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+.noUi-horizontal .noUi-handle {
+  top: -6px !important;
+}
+
+.noUi-handle:before,
+.noUi-handle:after {
+  display: none !important;
+}
+
+/* ----------------------------------------------------
+   SLIDER LAYOUT — label boven, waarde onder
+---------------------------------------------------- */
+
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* kleine ruimte tussen label, slider en waarde */
+}
+
+/* De slider-line bevat nu alleen het label */
+.slider-line {
+  display: flex;
+  justify-content: flex-start;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #d9d6d6;
+}
+
+/* De waarde zetten we onder de slider */
+.slider-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #d9d6d6;
+  margin-top: 2px;
+}
+
+/* Verberg noUiSlider interne labels */
+.noUi-value,
+.noUi-marker,
+.noUi-tooltip {
+  display: none !important;
+}
